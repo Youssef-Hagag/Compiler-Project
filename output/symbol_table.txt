@@ -1,0 +1,19 @@
++----------------------+--------------------------------+-------+------+-------+-------+----------------------+
+| Name                 | Type                           | Scope | Line | Init  | Used  | Initial Value        |
++----------------------+--------------------------------+-------+------+-------+-------+----------------------+
+| test                 | string                         | 0     | 2    | Yes   | Yes   | test                 |
+| x                    | string (const)                 | 0     | 6    | Yes   | Yes   | hmm                  |
+| y                    | string                         | 0     | 10   | Yes   | Yes   | Runtime              |
+| z                    | string (const)                 | 0     | 14   | Yes   | No    | Runtime              |
+| m                    | string                         | 0     | 18   | Yes   | No    | hmmhmm               |
+| n                    | string                         | 0     | 19   | Yes   | No    | why                  |
+| h                    | int (const)                    | 0     | 23   | Yes   | Yes   | 5                    |
+| calc                 | (int, int?) → int              | 0     | 25   | Yes   | Yes   | Function             |
+| a                    | int                            | 1     | 25   | Yes   | Yes   | Runtime              |
+| b                    | int                            | 1     | 25   | Yes   | Yes   | 5                    |
+| i                    | int (const)                    | 0     | 36   | Yes   | Yes   | 17                   |
+| i                    | int                            | 1     | 38   | Yes   | Yes   | 5                    |
+| inner                | int                            | 2     | 40   | Yes   | No    | 30                   |
+| i                    | int                            | 1     | 50   | Yes   | Yes   | 10                   |
+| global_i             | int                            | 0     | 59   | Yes   | No    | 17                   |
++----------------------+--------------------------------+-------+------+-------+-------+----------------------+

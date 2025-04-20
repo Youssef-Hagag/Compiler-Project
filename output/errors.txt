@@ -1,0 +1,15 @@
+---------------------ERRORS---------------------
+[Line 7] Error: Cannot assign to constant 'x'
+[Line 15] Error: Cannot assign to constant 'z'
+[Line 29] Error: Function 'calc' expects at least 1 parameters but got 0
+[Line 30] Error: Parameter 1 of function 'calc' expects type int but got type string
+[Line 61] Error: Break statement not in loop or switch
+[Line 62] Error: Continue statement not in loop
+[Line 65] Error: Undeclared function 'i' called
+
+---------------------Unused Symbols---------------------
+Symbol 'z' of type 'string' declared at line 14 and not used
+Symbol 'm' of type 'string' declared at line 18 and not used
+Symbol 'n' of type 'string' declared at line 19 and not used
+Symbol 'inner' of type 'int' declared at line 40 and not used
+Symbol 'global_i' of type 'int' declared at line 59 and not used
