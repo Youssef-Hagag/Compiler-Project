@@ -74,7 +74,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 29 "parser.y"
+#line 33 "parser.y"
 
     Value val;
     ListValue list_val;
@@ -84,8 +84,9 @@ typedef union YYSTYPE
 
 
 
+
 /* Line 1676 of yacc.c  */
-#line 89 "parser.tab.h"
+#line 90 "parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

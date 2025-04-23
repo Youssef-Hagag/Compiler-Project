@@ -8,6 +8,10 @@
 #include <vector>
 #include <stdarg.h>
 
+#include "quadruples.h"
+#include "quadruples.cpp"
+extern FILE *quadFile = nullptr;
+
 extern int yylex(void);
 void yyerror(const char *s, ...);
 extern int line_num;
@@ -32,6 +36,7 @@ bool is_switch = false;
     char *str;
     char *relop;
     int type_val;
+
 }
 
 /* Token declarations */
@@ -62,6 +67,7 @@ bool is_switch = false;
 
 // The program starts with zero or more statements, or function definitions
 program:
+
       /* empty */ { }
     | program statement { $$ = $2; }
     | program function { $$ = $2; }
@@ -108,6 +114,8 @@ declaration:
           int idx = add_symbol($2, $1);
           if (idx != -1) {
             printf("[Line %d] Declaration: %s\n", line_num, $2);
+            quad_handle_identifier($2, "STORE");
+
           }
       }
     | TYPE VARIABLE '=' expression_or_assignment ';' {
@@ -118,6 +126,17 @@ declaration:
                 symbol_table.table[idx].init_value = $4;
                 symbol_table.table[idx].init_value.is_const = false;
                 printf("[Line %d] Declaration with init: %s = ...\n", line_num, $2);
+
+                quad_handle_identifier($2, "STORE");
+
+                if ($1 == TYPE_INT) {
+                    quad_push_integer($4.data.ival);       //
+                }else if ($1 == TYPE_FLOAT) {
+                    quad_push_float($4.data.fval);
+                }else if ($1 == TYPE_STRING || $1 == TYPE_CHAR) {
+                    quad_push_string($4.data.sval);
+                }
+                quad_handle_identifier($2, "STORE");
             }
           }
       }
@@ -129,7 +148,10 @@ declaration:
                 symbol_table.table[idx].init_value = $5;
                 symbol_table.table[idx].init_value.is_const = true;
                 printf("[Line %d] Constant declaration: %s = ...\n", line_num, $3);
+
+                quad_handle_identifier($3, "STORE");
             } 
+
         }
       }
     ;
@@ -155,6 +177,7 @@ assignment:
               // check type compatibility during assignment
               type_mismatch(symbol_table.table[idx].type, $3.type);
           }
+
       }
     ;
 
@@ -165,8 +188,8 @@ expression_or_assignment:
     ;
 
 expression:
-      INTEGER 
-    | FLOAT_LITERAL
+      INTEGER
+    | FLOAT_LITERAL 
     | CHAR_LITERAL
     | BOOL_LITERAL
     | STRING_LITERAL
@@ -421,8 +444,9 @@ int main(int argc, char **argv) {
         exit(1);
     }
     fprintf(stderr, "---------------------ERRORS---------------------\n");
+    quadFile = quad_init_file("./output/quad.txt");
+    quad_set_output("./output/quad.txt", quadFile);
     yyparse();
-
     fclose(stdin);
     fclose(stderr);
     print_symbol_table("output/symbol_table.txt");
