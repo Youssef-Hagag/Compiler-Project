@@ -1,5 +1,3 @@
-#!/bin/bash
-
 bison -d parser.y
 flex lexer.l    
 g++ -Wno-register -o mylang parser.tab.c lex.yy.c value.cpp symbol.cpp
