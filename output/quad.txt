@@ -1,28 +1,38 @@
-	 STORE test
-	 PUSH test
-	 STORE test
-	 STORE x
-	 STORE y
-	 PUSH 
-	 STORE y
-	 STORE z
-	 STORE m
-	 PUSH hmmhmm
-	 STORE m
-	 STORE n
-	 PUSH why
-	 STORE n
-	 STORE h
-	 STORE i
-	 STORE i
-	 PUSH 5
-	 STORE i
-	 STORE inner
-	 PUSH 30
-	 STORE inner
-	 STORE i
-	 PUSH 10
-	 STORE i
-	 STORE global_i
-	 PUSH 17
-	 STORE global_i
++----------+----------------------+----------------------+----------------------+
+| OP       | ARG1                 | ARG2                 | RESULT               |
++----------+----------------------+----------------------+----------------------+
+| LD_STR   | test                 |                      |                      |
+| STORE    | test                 |                      |                      |
+| LD_STR   | not test heh         |                      |                      |
+| ST       | test                 |                      |                      |
+| STORE    | x                    |                      |                      |
+| LD_STR   | hmmm                 |                      |                      |
+| ST       | x                    |                      |                      |
+| LD_STR   |                      |                      |                      |
+| STORE    | y                    |                      |                      |
+| LD_STR   | 2                    |                      |                      |
+| ST       | y                    |                      |                      |
+| STORE    | z                    |                      |                      |
+| LD_STR   |                      |                      |                      |
+| ST       | z                    |                      |                      |
+| LD_STR   | hmmhmm               |                      |                      |
+| STORE    | m                    |                      |                      |
+| LD_STR   | why                  |                      |                      |
+| STORE    | n                    |                      |                      |
+| STORE    | h                    |                      |                      |
+| func     | calc                 |                      |                      |
+| endfunc  | calc                 |                      |                      |
+| STORE    | i                    |                      |                      |
+| LD_INT   | 5                    |                      |                      |
+| STORE    | i                    |                      |                      |
+| LD_INT   | 0                    |                      |                      |
+| ST       | i                    |                      |                      |
+| LD_INT   | 30                   |                      |                      |
+| STORE    | inner                |                      |                      |
+| LD_INT   | 10                   |                      |                      |
+| STORE    | i                    |                      |                      |
+| LD_INT   | 0                    |                      |                      |
+| ST       | i                    |                      |                      |
+| LD_INT   | 17                   |                      |                      |
+| STORE    | global_i             |                      |                      |
++----------+----------------------+----------------------+----------------------+

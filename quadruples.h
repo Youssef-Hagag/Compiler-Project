@@ -7,26 +7,23 @@
 FILE *quad_init_file(char *path);
 
 void quad_set_output(char *p, FILE *f);
+void quad_close_table(void);
+void print_border(void);
 
-void quad_generate_function(char *func, char *a);
+void emit_quad(const char *op, const char *arg1, const char *arg2, const char *res);
 
-void quad_generate_return();
+void quad_push_integer(int v);
+void quad_push_float(float v);
+void quad_push_string(const char *s);
 
 void quad_generate_operation(const char *inst);
 
-void quad_push_integer(int v);
-
-void quad_push_float(float v);
-
-void quad_push_string(char *str);
-
-void quad_handle_identifier(char *s, char *a);
+// e.g. identifier handling
+void quad_handle_identifier(const char *name, const char *action);
+void quad_handle_identifier_2(const char *dest, const char *action, const char *src);
+void quad_handle_identifier_3(const char *dest, const char *action, const char *src);
 
 void quad_register_loop_end(int id);
-
-void quad_jump_to_loop_end();
-
-void quad_finalize_loop_end();
 
 void quad_create_loop_start(int loopId, char *labelType);
 

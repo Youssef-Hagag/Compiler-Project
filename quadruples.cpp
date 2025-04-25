@@ -5,6 +5,8 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <math.h>
+#define OP_W 8
+#define ARG_W 20
 
 typedef struct
 {
@@ -40,82 +42,112 @@ FILE *quad_init_file(char *path)
     return file;
 }
 
-void quad_set_output(char *p, FILE *f)
+void print_border(void)
 {
-    g_outputFilePath = p;
+    fputc('+', g_outputFile);
+    for (int i = 0; i < OP_W + 2; i++)
+        fputc('-', g_outputFile);
+    fputc('+', g_outputFile);
+    for (int i = 0; i < ARG_W + 2; i++)
+        fputc('-', g_outputFile);
+    fputc('+', g_outputFile);
+    for (int i = 0; i < ARG_W + 2; i++)
+        fputc('-', g_outputFile);
+    fputc('+', g_outputFile);
+    for (int i = 0; i < ARG_W + 2; i++)
+        fputc('-', g_outputFile);
+    fputs("+\n", g_outputFile);
+}
+void quad_close_table(void)
+{
+    print_border();
+}
+void quad_set_output(char *path, FILE *f)
+{
     g_outputFile = f;
+
+    print_border();
+    fprintf(g_outputFile,
+            "| %-*s | %-*s | %-*s | %-*s |\n",
+            OP_W, "OP",
+            ARG_W, "ARG1",
+            ARG_W, "ARG2",
+            ARG_W, "RESULT");
+    print_border();
 }
 
-// Function handling
-void quad_generate_function(char *func, char *a)
+void emit_quad(const char *op, const char *arg1, const char *arg2, const char *res)
 {
-    if (strcmp(a, "start") == 0)
-    {
-        fprintf(g_outputFile, "%s:\n", func);
-    }
-    else if (strcmp(a, "end") == 0)
-    {
-        fprintf(g_outputFile, "\t END %s\n", func);
-    }
-    else if (strcmp(a, "call") == 0)
-    {
-        fprintf(g_outputFile, "\t CALL %s\n", func);
-    }
+    fprintf(g_outputFile,
+            "| %-*s | %-*s | %-*s | %-*s |\n",
+            OP_W, op ? op : "",
+            ARG_W, arg1 ? arg1 : "",
+            ARG_W, arg2 ? arg2 : "",
+            ARG_W, res ? res : "");
 }
 
-void quad_generate_return()
-{
-    fprintf(g_outputFile, "\t RET\n");
-}
-
-// Operation handling
-void quad_generate_operation(const char *inst)
-{
-    fprintf(g_outputFile, "\t %s\n", inst);
-}
-
-// Value pushing
+// Example: pushing constants becomes a quadruple with op "LD"
 void quad_push_integer(int v)
 {
-    fprintf(g_outputFile, "\t PUSH %d\n", v);
+    char buf[32];
+    snprintf(buf, sizeof(buf), "%d", v);
+    emit_quad("LD_INT", buf, NULL, NULL);
 }
 
 void quad_push_float(float v)
 {
-    fprintf(g_outputFile, "\t PUSH %f\n", v);
+    char buf[32];
+    snprintf(buf, sizeof(buf), "%f", v);
+    emit_quad("LD_FLT", buf, NULL, NULL);
 }
 
-void quad_push_string(char *str)
+void quad_push_string(const char *s)
 {
-    fprintf(g_outputFile, "\t PUSH %s\n", str);
+    emit_quad("LD_STR", s, NULL, NULL);
 }
 
-// Identifier handling
-void quad_handle_identifier(char *s, char *a)
+// A plain operation with no explicit operands (stack-based IR)
+void quad_generate_operation(const char *inst)
 {
-    fprintf(g_outputFile, "\t %s %s\n", a, s);
+    emit_quad(inst, NULL, NULL, NULL);
 }
 
-// Loop end management
-void quad_register_loop_end(int id)
+void quad_handle_identifier(const char *name, const char *action)
 {
-    g_loopEndLabels.values[++g_loopEndLabels.currentIndex] = id;
+    emit_quad(action, name, NULL, NULL);
 }
 
-void quad_jump_to_loop_end()
+void quad_handle_identifier_2(const char *dest,
+                              const char *action,
+                              const char *src)
 {
-    fprintf(g_outputFile, "\t JMP EndLoop_%d\n", g_loopEndLabels.values[g_loopEndLabels.currentIndex]);
+    emit_quad(action, dest, src, NULL);
 }
 
-void quad_finalize_loop_end()
+void quad_handle_identifier_3(const char *dest,
+                              const char *action,
+                              const char *src)
 {
-    if (g_loopEndLabels.currentIndex < 0)
-    {
-        fprintf(stderr, "Error: Loop end stack underflow\n");
-        return;
-    }
-    int endLoopId = g_loopEndLabels.values[g_loopEndLabels.currentIndex--];
-    fprintf(g_outputFile, "EndLoop_%d:\n", endLoopId);
+    emit_quad(action, dest, src, dest);
+}
+
+void quad_conditional_jump(int labelId)
+{
+    char buf[32];
+    snprintf(buf, sizeof(buf), "L%d", labelId);
+    emit_quad("JF", NULL, NULL, buf);
+}
+
+// unconditional jump
+void quad_jump_to_loop_start(const char *label)
+{
+    emit_quad("JMP", NULL, NULL, label);
+}
+
+// label emission:
+void quad_emit_label(const char *label)
+{
+    emit_quad("LABEL", label, NULL, NULL);
 }
 
 // Loop start management
@@ -123,11 +155,6 @@ void quad_create_loop_start(int loopId, char *labelType)
 {
     g_loopStartLabels.values[++g_loopStartLabels.currentIndex] = loopId;
     fprintf(g_outputFile, "Start%s_%d:\n", labelType, loopId);
-}
-
-void quad_jump_to_loop_start(char *labelType)
-{
-    fprintf(g_outputFile, "\t JMP Start%s_%d\n", labelType, g_loopStartLabels.values[g_loopStartLabels.currentIndex]);
 }
 
 void quad_finalize_loop_start()
@@ -138,13 +165,6 @@ void quad_finalize_loop_start()
         return;
     }
     g_loopStartLabels.currentIndex--;
-}
-
-// Conditional jump handling
-void quad_conditional_jump(int labelId)
-{
-    fprintf(g_outputFile, "\t JF FalseLabel_%d\n", labelId);
-    g_conditionalLabels.values[g_conditionalLabels.currentIndex++] = labelId;
 }
 
 void quad_finalize_conditional()
@@ -170,7 +190,7 @@ void quad_use_switch_var()
         fprintf(stderr, "Error: No switch variable defined\n");
         return;
     }
-    fprintf(g_outputFile, "\t PUSH %s\n", g_switchVariables.values[g_switchVariables.currentIndex]);
+    fprintf(g_outputFile, "\t LD %s\n", g_switchVariables.values[g_switchVariables.currentIndex]);
 }
 
 void quad_clear_switch_var()

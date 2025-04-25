@@ -1,0 +1,58 @@
+1. Simple arithmetic(+, x, y, t1) // t1 = x + y
+    (+, y, z, t2)                 // t2 = y + z
+    (*, t1, t2, t3)               // t3 = t1 * t2
+    (+, t1, z, t4)                // t4 = t1 + z
+    (+, t3, t4, t5)               // t5 = t3 + t4
+
+    2. If
+    - then - else
+    // source: if (x < y)    a = d+e;    else    a = d–e;
+    (<, x, y, t1)     // t1 = (x<y)
+    (jf, t1, _, L1)   // if-false jump to L1
+    (+, d, e, t2)     // t2 = d+e
+    (=, t2, _, a)     // a  = t2
+    (jmp, _, _, L2)   // goto L2
+    (label, _, _, L1) // L1:
+    (-, d, e, t3)     // t3 = d–e
+    (=, t3, _, a)     // a  = t3
+    (label, _, _, L2) // L2:
+
+    3. While loop
+    // source: while (i<n) { sum=sum+i; i=i+1; }
+    (label, _, _, L1) // L1:
+    (<, i, n, t1)     // t1 = (i<n)
+    (jf, t1, _, L2)   // if-false goto L2
+    (+, sum, i, t2)   // t2 = sum+i
+    (=, t2, _, sum)   // sum = t2
+    (+, i, 1, t3)     // t3 = i+1
+    (=, t3, _, i)     // i   = t3
+    (jmp, _, _, L1)   // goto L1
+    (label, _, _, L2) // L2:
+
+    4. For loop
+    // source: for(i=0; i<10; i=i+1) sum=sum+i;
+    (=, 0, _, i)      // i=0
+    (label, _, _, L1) // L1:
+    (<, i, 10, t1)    // t1 = i<10
+    (jf, t1, _, L2)   // if-false goto L2
+    (+, sum, i, t2)   // t2 = sum+i
+    (=, t2, _, sum)   // sum = t2
+    (+, i, 1, t3)     // t3 = i+1
+    (=, t3, _, i)     // i   = t3
+    (jmp, _, _, L1)   // goto L1
+    (label, _, _, L2) // L2:
+
+    5. Functions 5.1. Definition
+    // source: int foo(x,y) { return x+y; }
+    (func, foo, _, _)    // begin function foo
+    (param, x, _, _)     // x is parameter
+    (param, y, _, _)     // y is parameter
+    (+, x, y, t1)        // t1 = x+y
+    (ret, t1, _, _)      // return t1
+    (endfunc, foo, _, _) // end function foo
+    5.2. Call site
+    // source: z = foo(a,b);
+    (param, a, _, _)   // push a
+    (param, b, _, _)   // push b
+    (call, foo, 2, t2) // call foo with 2 args → t2
+    (=, t2, _, z)      // z = t2

@@ -97,7 +97,8 @@ statement:
                   yyerror("Void function cannot return a value");
               } else if(!type_mismatch(current_return_type, $2.type)) {
                   printf("[Line %d] Return statement\n", line_num);
-              }   
+                  //emit_quad("ret", $2.data.sval, NULL, NULL);
+              }
           }
       }
     | BREAK ';' { if(!is_loop && !is_switch) yyerror("Break statement not in loop or switch"); }
@@ -127,7 +128,6 @@ declaration:
                 symbol_table.table[idx].init_value.is_const = false;
                 printf("[Line %d] Declaration with init: %s = ...\n", line_num, $2);
 
-                quad_handle_identifier($2, "STORE");
 
                 if ($1 == TYPE_INT) {
                     quad_push_integer($4.data.ival);       //
@@ -175,7 +175,17 @@ assignment:
                   yyerror("Cannot assign to constant '%s'", $1);
               }
               // check type compatibility during assignment
-              type_mismatch(symbol_table.table[idx].type, $3.type);
+              if(!type_mismatch(symbol_table.table[idx].type, $3.type)){
+                if ( $3.type == TYPE_INT) {
+                    quad_push_integer($3.data.ival);       //
+                }else if ($3.type  == TYPE_FLOAT) {
+                    quad_push_float($3.data.fval);
+                }else if ($3.type  == TYPE_STRING || $3.type == TYPE_CHAR) {
+                    quad_push_string($3.data.sval);
+                }
+                quad_handle_identifier($1, "ST");
+              }
+
           }
 
       }
@@ -217,7 +227,7 @@ expression:
               }
           }
       }
-    | expression '+' expression { $$ = add_values($1, $3); }
+    | expression '+' expression { $$ = add_values($1, $3); emit_quad("+", $1, $3, "t1")}
     | expression '-' expression { $$ = sub_values($1, $3); }
     | expression '*' expression { $$ = mul_values($1, $3); }
     | expression '/' expression { $$ = div_values($1, $3); }
@@ -310,6 +320,8 @@ function:
             seen_return = false;
         }
         enter_scope(); // Noitce that the function name itself is in a scope higher than the parameters and body 
+        emit_quad("func", $2, NULL, NULL);
+
       } parameters ')' block {
           if (current_function_name != NULL) {
               if (current_return_type != TYPE_VOID && !seen_return) {
@@ -320,6 +332,7 @@ function:
               current_return_type = -1;
           } 
           exit_scope(); 
+        emit_quad("endfunc", $2, NULL, NULL);
       }
     | VOID VARIABLE '(' { 
         int idx = add_symbol($2, $1, true);
@@ -447,6 +460,7 @@ int main(int argc, char **argv) {
     quadFile = quad_init_file("./output/quad.txt");
     quad_set_output("./output/quad.txt", quadFile);
     yyparse();
+    quad_close_table();
     fclose(stdin);
     fclose(stderr);
     print_symbol_table("output/symbol_table.txt");
