@@ -99,8 +99,8 @@ statement:
               }
           }
       }
-    | BREAK ';' { if(!is_loop && !is_switch) yyerror("Break statement not in loop or switch"); }
-    | CONTINUE ';' { if(!is_loop) yyerror("Continue statement not in loop"); }
+    | BREAK ';' { if(!is_loop && !is_switch) yyerror("Break statement not in loop or switch"); emit_quad("GOTO", NULL, NULL, break_labels.back()); }
+    | CONTINUE ';' { if(!is_loop) yyerror("Continue statement not in loop"); emit_quad("GOTO", NULL, NULL, continue_labels.back()); }
     ;
 
 declarations:
@@ -223,23 +223,23 @@ expression:
     ;
 
 opt_expression:
-      /* empty */ {}
+      /* empty */ { $$.name = NULL; }
     | expression
     ;
 
 opt_assignment:
-      /* empty */ {}
+      /* empty */ { $$.name = NULL; }
     | assignment
     ;
 
 //--------------------------------------------------------------------------[Flow Control (If/Loops/Switch)]--------------------------------------------------------------------------//
 if_statement:
-      IF '(' expression ')' { printf("[Line %d] If statement\n", line_num); enter_scope(); } if_body { exit_scope(); }
+      IF '(' expression ')' { printf("[Line %d] If statement\n", line_num); enter_scope(); quad_if_start($3.name); } if_body { exit_scope(); quad_if_end(); }
     ;
 
 if_body:
       statement
-    | statement ELSE statement
+    | statement ELSE {{ exit_scope(); quad_if_else(); enter_scope(); }} statement { exit_scope(); }
 
 while_statement:
       WHILE '(' expression ')' { is_loop = true; printf("[Line %d] While loop\n", line_num); enter_scope(); quad_while_start($3.name) } statement { is_loop = false; exit_scope(); quad_while_end(); }
@@ -250,38 +250,52 @@ do_while_statement:
     ;
 
 for_statement:
-      FOR '(' { enter_scope(); } opt_assignment ';' opt_expression ';' opt_assignment ')' 
-      {
+      FOR '(' { enter_scope(); } opt_assignment ';' { 
           printf("[Line %d] For loop\n", line_num);
           is_loop = true;
+          quad_for_start(); 
+      } opt_expression { 
+          quad_for_condition($7.name);
+      } ';' opt_assignment
+      {
+        quad_for_skip();
       }
-      statement {
+       ')' statement 
+      { 
           exit_scope();
           is_loop = false;
+          quad_for_end();
       }
-    | FOR '(' { enter_scope(); } declaration opt_expression ';' opt_assignment ')'
-      {
+    | FOR '(' { enter_scope(); } declaration { 
           printf("[Line %d] For loop\n", line_num);
           is_loop = true;
+          quad_for_start(); 
+      } opt_expression { 
+          quad_for_condition($6.name);
+      } ';' opt_assignment
+      {
+          quad_for_skip();
       }
-     statement {
+       ')' statement 
+      { 
           exit_scope();
           is_loop = false;
+          quad_for_end();
       }
     ;
 
 switch_statement:
-      SWITCH '(' expression ')' {  is_switch = true; printf("[Line %d] Switch statement\n", line_num); enter_scope(); } switch_body { exit_scope(); }
+      SWITCH '(' expression ')' {  is_switch = true; printf("[Line %d] Switch statement\n", line_num); enter_scope();  quad_switch_start($3.name); } switch_body { exit_scope();  quad_switch_end(); }
     ;
 
 switch_body:
       '{' case_list '}' { is_switch = false; }
-      | '{' case_list DEFAULT ':' statements '}' { is_switch = false; }
+      | '{' case_list DEFAULT { quad_switch_default(); } ':' statements '}' { is_switch = false; }
     ;
 
 case_list:
       /* empty */ {}
-    | case_list CASE INTEGER ':' statements
+    | case_list CASE INTEGER { quad_switch_case($3.name); } ':' statements
     ;
 
 //--------------------------------------------------------------------------[Functions]--------------------------------------------------------------------------//
@@ -325,7 +339,7 @@ function:
             default_params.clear();
             seen_default_param = false;
         }
-        enter_scope(); // Noitce that the function name itself is in a scope higher than the parameters and body 
+        enter_scope(); // Notice that the function name itself is in a scope higher than the parameters and body 
       } parameters ')' block {
           if (current_function_name != NULL) {
               add_function(current_function_idx, current_function_name, current_return_type, param_types, default_params);

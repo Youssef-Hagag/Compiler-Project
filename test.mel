@@ -1,10 +1,44 @@
-int y = 3 * -4 + 2 % 3;
-bool m = 1 || !0 && y;
-y = 15;
 
-while(y > 5){
-    y = y-3;
+// int y = 3 * -4 + 2 % 3;
+
+// bool m = 1 || !0 && y;
+// y = 15;
+
+// while (y > 5)
+// {
+//     y = y - 3;
+//     break;
+// }
+
+// switch (y)
+// {
+// case 1:
+//     y = 1;
+//     break;
+// case 2:
+//     y = 2;
+//     break;
+// case 3:
+//     y = 3;
+//     break;
+// default:
+//     y = 0;
+// }
+
+// int y = 0;
+
+// for (int i = 0;; i = i+1)
+// {
+//     y = y + i;
+//     if(y > 10)
+//         break;
+// }
+int y = 5;
+switch (y + 1)
+{
+case 1:
+    y = 1 + 1;
+    break; 
 }
 
-int l = 4;
-
+bool m = (1 == 2 && 2 == 3) || (1 == 1 && 2 == 2);

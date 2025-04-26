@@ -1,5 +1,4 @@
 ---------------------ERRORS---------------------
 
 ---------------------Unused Symbols---------------------
-Symbol 'm' of type 'bool' declared at line 2 and not used
-Symbol 'l' of type 'int' declared at line 9 and not used
+Symbol 'm' of type 'bool' declared at line 44 and not used

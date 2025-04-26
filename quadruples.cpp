@@ -11,23 +11,49 @@
 
 static int temp_counter = 0;
 static int label_counter = 0;
+static int switch_counter = 0; // Counter for switch variables
 
 static std::vector<char *> continue_labels;
 static std::vector<char *> break_labels;
 
-// return a fresh temp name "t1", "t2", …
+static std::vector<char *> if_false_labels;
+static std::vector<char *> if_end_labels;
+
+struct SwitchContext {
+    char *switch_expr;        // Switch expression
+    char *next_case_label;    // Next case comparison label
+};
+// for nested switch statements
+static std::vector<SwitchContext> switch_contexts;
+
+// array of operators that reset the temp_counter
+static const char *reset_ops[] = {
+    "ASSIGN",
+    "DECLARE",
+    "DECLARE_CONST",
+    "IF_FALSE_GOTO",
+    "IF_TRUE_GOTO",
+    "GOTO",
+    "LABEL",
+};
+
 static char *new_temp()
 {
     char buf[16];
-    snprintf(buf, sizeof(buf), "t%d", ++temp_counter);
+    snprintf(buf, sizeof(buf), "#T%d", ++temp_counter);
     return strdup(buf);
 }
 
-// return a fresh label name "L1", "L2", …
 static char *new_label()
 {
     char buf[16];
-    snprintf(buf, sizeof(buf), "L%d", ++label_counter);
+    snprintf(buf, sizeof(buf), "#LABEL%d", ++label_counter);
+    return strdup(buf);
+}
+
+static char *new_switch_var(){
+    char buf[16];
+    snprintf(buf, sizeof(buf), "#S%d", ++switch_counter);
     return strdup(buf);
 }
 
@@ -80,11 +106,6 @@ char *emit_quad(const char *op, const char *arg1, const char *arg2, const char *
 {
     char *real_res = res ? strdup(res) : new_temp();
 
-    if (strcmp(op, "ASSIGN") == 0 || strcmp(op, "DECLARE") == 0 || strcmp(op, "DECLARE_CONST") == 0)
-    {
-        temp_counter = 0; // Reset temp counter for assignment
-    }
-
     fprintf(g_outputFile,
             "| %-*s | %-*s | %-*s | %-*s |\n",
             OP_W, op ? op : "",
@@ -92,7 +113,50 @@ char *emit_quad(const char *op, const char *arg1, const char *arg2, const char *
             ARG_W, arg2 ? arg2 : "",
             ARG_W, real_res ? real_res : "");
 
+    // If the operation is not a math, logical, or comparison operation, reset the temp_counter
+    for (int i = 0; i < sizeof(reset_ops) / sizeof(reset_ops[0]); i++)
+    {
+        if (strcmp(op, reset_ops[i]) == 0)
+        {
+            temp_counter = 0;
+            break;
+        }
+    }
+
     return real_res;
+}
+
+void quad_if_start(const char *cond)
+{
+    char *Lfalse = new_label();
+    char *Lend = new_label();
+    if_false_labels.push_back(Lfalse);
+    if_end_labels.push_back(Lend);
+
+    emit_quad("IF_FALSE_GOTO", cond, NULL, Lfalse);
+}
+
+void quad_if_else()
+{
+    // jump over the else‐branch
+    emit_quad("GOTO", NULL, NULL, if_end_labels.back());
+    // place the “false” label so else runs here
+    emit_quad("LABEL", NULL, NULL, if_false_labels.back());
+
+    if_false_labels.pop_back();
+}
+
+void quad_if_end()
+{
+    // close off the entire if/else
+    if (if_false_labels.empty())
+        emit_quad("LABEL", NULL, NULL, if_end_labels.back());
+    else
+    {
+        emit_quad("LABEL", NULL, NULL, if_false_labels.back());
+        if_false_labels.pop_back();
+    }
+    if_end_labels.pop_back();
 }
 
 void quad_while_start(const char *condition)
@@ -136,4 +200,151 @@ void quad_do_while_end(const char *condition)
     emit_quad("LABEL", NULL, NULL, break_labels.back());
     continue_labels.pop_back();
     break_labels.pop_back();
+}
+
+void quad_for_start()
+{
+    // Create new labels for loop start, loop iteration, and loop end
+    char *Literation = new_label();
+    char *Lend = new_label();
+
+    // Store these labels for later use
+    continue_labels.push_back(Literation);
+    break_labels.push_back(Lend);
+
+    emit_quad("LABEL", NULL, NULL, Literation);
+}
+
+void quad_for_condition(const char *condition)
+{
+    // If condition is false, break out of loop
+    if (condition != NULL)
+        emit_quad("IF_FALSE_GOTO", condition, NULL, break_labels.back());
+
+    char *LSkip = new_label(); // Skip the first assignment (i = i + 1)
+    continue_labels.push_back(LSkip);
+    emit_quad("GOTO", NULL, NULL, LSkip);
+}
+
+void quad_for_skip()
+{
+    emit_quad("LABEL", NULL, NULL, continue_labels.back());
+    continue_labels.pop_back();
+}
+
+void quad_for_end()
+{
+    // Place the end label where 'break' will jump to
+    emit_quad("GOTO", NULL, NULL, continue_labels.back());
+    emit_quad("LABEL", NULL, NULL, break_labels.back());
+
+    // Clean up the loop labels
+    continue_labels.pop_back();
+    break_labels.pop_back();
+}
+
+void quad_switch_start(const char *expr) {
+    // Create end label for break statements
+    char *Lend = new_label();
+    break_labels.push_back(Lend);
+    
+    // Push a new context for this switch
+    SwitchContext context;
+    const char *switch_var = new_switch_var();
+    emit_quad("ASSIGN", expr, NULL, switch_var);
+    context.switch_expr = strdup(switch_var);
+    context.next_case_label = NULL; // since there is no previous case that would need a label to jump to
+    switch_contexts.push_back(context);
+}
+
+void quad_switch_case(const char *value) {
+    // Make sure we have an active switch
+    if (switch_contexts.empty()) {
+        // Error: case outside of switch
+        return;
+    }
+    
+    SwitchContext &context = switch_contexts.back();
+    
+    // Place label for previous case's comparison to jump to
+    char *comparison_label = context.next_case_label;
+    if(comparison_label != NULL) {
+        emit_quad("LABEL", NULL, NULL, comparison_label);
+    }
+    
+    // Create label for case body
+    char *Lcase_body = new_label();
+    
+    // Create label for next case comparison
+    context.next_case_label = new_label();
+    
+    // Compare switch expression with case value
+    char *temp = new_temp();
+    emit_quad("==", context.switch_expr, value, temp);
+    
+    // If equal, jump to case body
+    emit_quad("IF_TRUE_GOTO", temp, NULL, Lcase_body);
+    
+    // Otherwise, continue to next comparison
+    emit_quad("GOTO", NULL, NULL, context.next_case_label);
+    
+    // Place case body label
+    emit_quad("LABEL", NULL, NULL, Lcase_body);
+}
+
+void quad_switch_default() {
+    // Make sure we have an active switch
+    if (switch_contexts.empty()) {
+        // Error: default outside of switch
+        return;
+    }
+    
+    SwitchContext &context = switch_contexts.back();
+    
+    // Place label for the last case's comparison to jump to
+    char *comparison_label = context.next_case_label;
+    emit_quad("LABEL", NULL, NULL, comparison_label);
+    
+    // Default doesn't need a comparison, just a label
+    // The next_case_label becomes NULL since there are no more cases after default
+    context.next_case_label = NULL;
+}
+
+void quad_switch_end() {
+    // Make sure we have an active switch
+    if (switch_contexts.empty()) {
+        // Error: end of switch without a switch
+        return;
+    }
+    
+    SwitchContext &context = switch_contexts.back();
+    
+    // If there was no default case (and we still have a next_case_label)
+    if (context.next_case_label != NULL) {
+        emit_quad("LABEL", NULL, NULL, context.next_case_label);
+    }
+    
+    // Place end label for break statements
+    emit_quad("LABEL", NULL, NULL, break_labels.back());
+    break_labels.pop_back();
+    
+    // Clean up this switch's context
+    free(context.switch_expr);
+    switch_contexts.pop_back();
+}
+
+void quad_break()
+{
+    // break out of loop or switch
+    if (break_labels.empty())
+        return;
+    emit_quad("GOTO", NULL, NULL, break_labels.back());
+}
+
+void quad_continue()
+{
+    // continue out of loop
+    if (continue_labels.empty())
+        return;
+    emit_quad("GOTO", NULL, NULL, continue_labels.back());
 }

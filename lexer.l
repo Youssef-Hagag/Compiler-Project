@@ -66,7 +66,7 @@ int line_num = 1;
 "**"    { return POW; }
 
 [+\-*/=%!]  { return *yytext; }
-[{}();,]   { return *yytext; }
+[{}();,:]   { return *yytext; }
 
 [ \t]   ;
 "//".*  ;
