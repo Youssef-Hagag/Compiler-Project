@@ -42,6 +42,7 @@ Value make_int(int v) {
     val.data.fval = (float)v; // Store the float representation as well for implicit conversion
     val.is_const = true; 
     val.is_evaluated = true;
+    val.name = valueToString(val);
     return val;
 }
 
@@ -52,6 +53,7 @@ Value make_float(float v) {
     val.data.ival = (int)v; // Store the int representation as well for implicit conversion
     val.is_const = true; 
     val.is_evaluated = true;
+    val.name = valueToString(val);
     return val;
 }
 
@@ -61,6 +63,7 @@ Value make_char(char v) {
     val.data.cval = v;
     val.is_const = true; 
     val.is_evaluated = true;
+    val.name = valueToString(val);
     return val;
 }
 
@@ -70,6 +73,7 @@ Value make_bool(int v) {
     val.data.bval = v;
     val.is_const = true; 
     val.is_evaluated = true;
+    val.name = valueToString(val);
     return val;
 }
 
@@ -80,6 +84,7 @@ Value make_string(const char *s) {
     val.data.sval = strdup(s);
     val.is_const = true; 
     val.is_evaluated = true;
+    val.name = valueToString(val);
     return val;
 }
 
@@ -105,7 +110,7 @@ ListValue append_to_list(ListValue list, Value new_val) {
     return list;
 }
 
-char* value_to_string(Value v) {
+char* valueToString(Value v) {
     char *buffer = (char *)malloc(64); // Allocate a buffer for the string representation
     switch(v.type) {
         case TYPE_INT:
@@ -234,8 +239,8 @@ Value add_values(Value a, Value b) {
         return handle_types(a, b, "+");
             
     if(a.type == TYPE_STRING && b.type == TYPE_STRING) {
-        char *str_a = (a.type == TYPE_STRING) ? a.data.sval : value_to_string(a);
-        char *str_b = (b.type == TYPE_STRING) ? b.data.sval : value_to_string(b);
+        char *str_a = (a.type == TYPE_STRING) ? a.data.sval : valueToString(a);
+        char *str_b = (b.type == TYPE_STRING) ? b.data.sval : valueToString(b);
         
         size_t len = strlen(str_a) + strlen(str_b) + 1;
         char *res = (char *)malloc(len);

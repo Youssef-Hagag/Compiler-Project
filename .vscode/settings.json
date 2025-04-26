@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.html": "html",
         "cctype": "cpp",
         "compare": "cpp",
         "concepts": "cpp",
@@ -46,6 +47,8 @@
         "xiosbase": "cpp",
         "xlocale": "cpp",
         "xlocinfo": "cpp",
-        "xlocnum": "cpp"
+        "xlocnum": "cpp",
+        "functional": "cpp",
+        "text_encoding": "cpp"
     }
 }

@@ -4,42 +4,55 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <vector>
 #include <math.h>
-#define OP_W 8
+#define OP_W 20
 #define ARG_W 20
 
-typedef struct
-{
-    int count;
-    int currentIndex;
-    int values[100];
-} LabelTracker;
+static int temp_counter = 0;
+static int label_counter = 0;
 
-typedef struct
-{
-    int currentIndex;
-    char *values[100];
-} IdentifierTracker;
+static std::vector<char *> continue_labels;
+static std::vector<char *> break_labels;
 
-// Global state trackers
-static LabelTracker g_conditionalLabels = {0, -1, {0}};
-static LabelTracker g_loopStartLabels = {0, -1, {0}};
-static LabelTracker g_loopEndLabels = {0, -1, {0}};
-static IdentifierTracker g_switchVariables = {-1, {NULL}};
+// return a fresh temp name "t1", "t2", …
+static char *new_temp()
+{
+    char buf[16];
+    snprintf(buf, sizeof(buf), "t%d", ++temp_counter);
+    return strdup(buf);
+}
+
+// return a fresh label name "L1", "L2", …
+static char *new_label()
+{
+    char buf[16];
+    snprintf(buf, sizeof(buf), "L%d", ++label_counter);
+    return strdup(buf);
+}
 
 // Output file management
-static char *g_outputFilePath = NULL;
+static const char *g_outputFilePath = "./output/quad.txt";
 static FILE *g_outputFile = NULL;
 
-FILE *quad_init_file(char *path)
+void quad_init_file()
 {
-    FILE *file = fopen(path, "w");
+    FILE *file = fopen(g_outputFilePath, "w");
     if (file == NULL)
     {
-        fprintf(stderr, "Failed to create output file '%s'\n", path);
+        fprintf(stderr, "Failed to create output file '%s'\n", g_outputFilePath);
         exit(EXIT_FAILURE);
     }
-    return file;
+    g_outputFile = file;
+
+    print_border();
+    fprintf(g_outputFile,
+            "| %-*s | %-*s | %-*s | %-*s |\n",
+            OP_W, "OP",
+            ARG_W, "ARG1",
+            ARG_W, "ARG2",
+            ARG_W, "RESULT");
+    print_border();
 }
 
 void print_border(void)
@@ -62,143 +75,65 @@ void quad_close_table(void)
 {
     print_border();
 }
-void quad_set_output(char *path, FILE *f)
-{
-    g_outputFile = f;
 
-    print_border();
-    fprintf(g_outputFile,
-            "| %-*s | %-*s | %-*s | %-*s |\n",
-            OP_W, "OP",
-            ARG_W, "ARG1",
-            ARG_W, "ARG2",
-            ARG_W, "RESULT");
-    print_border();
-}
-
-void emit_quad(const char *op, const char *arg1, const char *arg2, const char *res)
+char *emit_quad(const char *op, const char *arg1, const char *arg2, const char *res)
 {
+    char *real_res = res ? strdup(res) : new_temp();
+
+    if (strcmp(op, "ASSIGN") == 0 || strcmp(op, "DECLARE") == 0 || strcmp(op, "DECLARE_CONST") == 0)
+    {
+        temp_counter = 0; // Reset temp counter for assignment
+    }
+
     fprintf(g_outputFile,
             "| %-*s | %-*s | %-*s | %-*s |\n",
             OP_W, op ? op : "",
             ARG_W, arg1 ? arg1 : "",
             ARG_W, arg2 ? arg2 : "",
-            ARG_W, res ? res : "");
+            ARG_W, real_res ? real_res : "");
+
+    return real_res;
 }
 
-// Example: pushing constants becomes a quadruple with op "LD"
-void quad_push_integer(int v)
+void quad_while_start(const char *condition)
 {
-    char buf[32];
-    snprintf(buf, sizeof(buf), "%d", v);
-    emit_quad("LD_INT", buf, NULL, NULL);
+    // 1) new begin/end labels
+    char *Lbegin = new_label(), *Lend = new_label();
+    continue_labels.push_back(Lbegin);
+    break_labels.push_back(Lend);
+    // 2) mark the loop head
+    emit_quad("LABEL", NULL, NULL, Lbegin);
+    // 3) if false, break out
+    emit_quad("IF_FALSE_GOTO", condition, NULL, Lend);
 }
 
-void quad_push_float(float v)
+void quad_while_end()
 {
-    char buf[32];
-    snprintf(buf, sizeof(buf), "%f", v);
-    emit_quad("LD_FLT", buf, NULL, NULL);
+    // 4) at end of body, jump back to head
+    emit_quad("GOTO", NULL, NULL, continue_labels.back());
+    // 5) place loop‐end label
+    emit_quad("LABEL", NULL, NULL, break_labels.back());
+    // 6) unwind stacks
+    continue_labels.pop_back();
+    break_labels.pop_back();
 }
 
-void quad_push_string(const char *s)
+void quad_do_while_start()
 {
-    emit_quad("LD_STR", s, NULL, NULL);
+    char *Lbody = new_label(), *Lend = new_label();
+    continue_labels.push_back(Lbody);
+    break_labels.push_back(Lend);
+
+    // label start of body
+    emit_quad("LABEL", NULL, NULL, Lbody);
 }
 
-// A plain operation with no explicit operands (stack-based IR)
-void quad_generate_operation(const char *inst)
+void quad_do_while_end(const char *condition)
 {
-    emit_quad(inst, NULL, NULL, NULL);
-}
-
-void quad_handle_identifier(const char *name, const char *action)
-{
-    emit_quad(action, name, NULL, NULL);
-}
-
-void quad_handle_identifier_2(const char *dest,
-                              const char *action,
-                              const char *src)
-{
-    emit_quad(action, dest, src, NULL);
-}
-
-void quad_handle_identifier_3(const char *dest,
-                              const char *action,
-                              const char *src)
-{
-    emit_quad(action, dest, src, dest);
-}
-
-void quad_conditional_jump(int labelId)
-{
-    char buf[32];
-    snprintf(buf, sizeof(buf), "L%d", labelId);
-    emit_quad("JF", NULL, NULL, buf);
-}
-
-// unconditional jump
-void quad_jump_to_loop_start(const char *label)
-{
-    emit_quad("JMP", NULL, NULL, label);
-}
-
-// label emission:
-void quad_emit_label(const char *label)
-{
-    emit_quad("LABEL", label, NULL, NULL);
-}
-
-// Loop start management
-void quad_create_loop_start(int loopId, char *labelType)
-{
-    g_loopStartLabels.values[++g_loopStartLabels.currentIndex] = loopId;
-    fprintf(g_outputFile, "Start%s_%d:\n", labelType, loopId);
-}
-
-void quad_finalize_loop_start()
-{
-    if (g_loopStartLabels.currentIndex < 0)
-    {
-        fprintf(stderr, "Error: Loop start stack underflow\n");
-        return;
-    }
-    g_loopStartLabels.currentIndex--;
-}
-
-void quad_finalize_conditional()
-{
-    if (g_conditionalLabels.currentIndex < 0)
-    {
-        fprintf(stderr, "Error: Conditional label stack underflow\n");
-        return;
-    }
-    fprintf(g_outputFile, "FalseLabel_%d:\n", g_conditionalLabels.values[--g_conditionalLabels.currentIndex]);
-}
-
-// Switch statement management
-void quad_register_switch_var(char *id)
-{
-    g_switchVariables.values[++g_switchVariables.currentIndex] = id;
-}
-
-void quad_use_switch_var()
-{
-    if (g_switchVariables.currentIndex < 0)
-    {
-        fprintf(stderr, "Error: No switch variable defined\n");
-        return;
-    }
-    fprintf(g_outputFile, "\t LD %s\n", g_switchVariables.values[g_switchVariables.currentIndex]);
-}
-
-void quad_clear_switch_var()
-{
-    if (g_switchVariables.currentIndex < 0)
-    {
-        fprintf(stderr, "Error: Switch variable stack underflow\n");
-        return;
-    }
-    g_switchVariables.currentIndex--;
+    // after body, evaluate condition → if true, repeat
+    emit_quad("IF_TRUE_GOTO", condition, NULL, continue_labels.back());
+    // place end label
+    emit_quad("LABEL", NULL, NULL, break_labels.back());
+    continue_labels.pop_back();
+    break_labels.pop_back();
 }

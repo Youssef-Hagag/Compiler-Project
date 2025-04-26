@@ -10,7 +10,6 @@
 
 #include "quadruples.h"
 #include "quadruples.cpp"
-extern FILE *quadFile = nullptr;
 
 extern int yylex(void);
 void yyerror(const char *s, ...);
@@ -97,7 +96,6 @@ statement:
                   yyerror("Void function cannot return a value");
               } else if(!type_mismatch(current_return_type, $2.type)) {
                   printf("[Line %d] Return statement\n", line_num);
-                  //emit_quad("ret", $2.data.sval, NULL, NULL);
               }
           }
       }
@@ -115,8 +113,7 @@ declaration:
           int idx = add_symbol($2, $1);
           if (idx != -1) {
             printf("[Line %d] Declaration: %s\n", line_num, $2);
-            quad_handle_identifier($2, "STORE");
-
+            emit_quad("DECLARE", typeToString($1), NULL, $2);
           }
       }
     | TYPE VARIABLE '=' expression_or_assignment ';' {
@@ -127,16 +124,7 @@ declaration:
                 symbol_table.table[idx].init_value = $4;
                 symbol_table.table[idx].init_value.is_const = false;
                 printf("[Line %d] Declaration with init: %s = ...\n", line_num, $2);
-
-
-                if ($1 == TYPE_INT) {
-                    quad_push_integer($4.data.ival);       //
-                }else if ($1 == TYPE_FLOAT) {
-                    quad_push_float($4.data.fval);
-                }else if ($1 == TYPE_STRING || $1 == TYPE_CHAR) {
-                    quad_push_string($4.data.sval);
-                }
-                quad_handle_identifier($2, "STORE");
+                emit_quad("DECLARE", typeToString($1), $4.name, $2);
             }
           }
       }
@@ -148,10 +136,8 @@ declaration:
                 symbol_table.table[idx].init_value = $5;
                 symbol_table.table[idx].init_value.is_const = true;
                 printf("[Line %d] Constant declaration: %s = ...\n", line_num, $3);
-
-                quad_handle_identifier($3, "STORE");
+                emit_quad("DECLARE_CONST", typeToString($2), $5.name, $3);
             } 
-
         }
       }
     ;
@@ -176,16 +162,8 @@ assignment:
               }
               // check type compatibility during assignment
               if(!type_mismatch(symbol_table.table[idx].type, $3.type)){
-                if ( $3.type == TYPE_INT) {
-                    quad_push_integer($3.data.ival);       //
-                }else if ($3.type  == TYPE_FLOAT) {
-                    quad_push_float($3.data.fval);
-                }else if ($3.type  == TYPE_STRING || $3.type == TYPE_CHAR) {
-                    quad_push_string($3.data.sval);
-                }
-                quad_handle_identifier($1, "ST");
+                emit_quad("ASSIGN", $3.name, NULL, $1);
               }
-
           }
 
       }
@@ -216,6 +194,7 @@ expression:
           else if(symbol_table.table[idx].is_initialized == false) {
               yyerror("Variable '%s' used before initialization", $1);
               $$ = make_runtime_value(symbol_table.table[idx].type);
+              $$.name = symbol_table.table[idx].name;
           }
           else{
               symbol_table.table[idx].is_used = true;
@@ -225,20 +204,21 @@ expression:
               else {
                   $$ = make_runtime_value(symbol_table.table[idx].type);
               }
+              $$.name = symbol_table.table[idx].name;
           }
       }
-    | expression '+' expression { $$ = add_values($1, $3); emit_quad("+", $1, $3, "t1")}
-    | expression '-' expression { $$ = sub_values($1, $3); }
-    | expression '*' expression { $$ = mul_values($1, $3); }
-    | expression '/' expression { $$ = div_values($1, $3); }
-    | expression '%' expression { $$ = mod_values($1, $3); }
-    | expression POW expression { $$ = pow_values($1, $3); }
-    | '-' expression %prec UMINUS { $$ = neg_value($2); }
-    | '!' expression { $$ = not_value($2); }
-    | expression LAND expression { $$ = and_values($1, $3); }
-    | expression LOR expression { $$ = or_values($1, $3); }
+    | expression '+' expression { $$ = add_values($1, $3); $$.name = emit_quad("+", $1.name, $3.name, NULL); }
+    | expression '-' expression { $$ = sub_values($1, $3); $$.name = emit_quad("-", $1.name, $3.name, NULL); }
+    | expression '*' expression { $$ = mul_values($1, $3); $$.name = emit_quad("*", $1.name, $3.name, NULL); }
+    | expression '/' expression { $$ = div_values($1, $3); $$.name = emit_quad("/", $1.name, $3.name, NULL); }
+    | expression '%' expression { $$ = mod_values($1, $3); $$.name = emit_quad("%", $1.name, $3.name, NULL); }
+    | expression POW expression { $$ = pow_values($1, $3); $$.name = emit_quad("^", $1.name, $3.name, NULL); }
+    | '-' expression %prec UMINUS { $$ = neg_value($2); $$.name = emit_quad("MINUS", $2.name, NULL, NULL); }
+    | '!' expression { $$ = not_value($2); $$.name = emit_quad("NOT", $2.name, NULL, NULL); }
+    | expression LAND expression { $$ = and_values($1, $3); $$.name = emit_quad("AND", $1.name, $3.name, NULL); }
+    | expression LOR expression { $$ = or_values($1, $3); $$.name = emit_quad("OR", $1.name, $3.name, NULL); }
     | '(' expression ')' { $$ = $2; }
-    | expression RELOP expression { $$ = compare_values($1, $3, $2); }
+    | expression RELOP expression { $$ = compare_values($1, $3, $2); $$.name = emit_quad($2, $1.name, $3.name, NULL); }
     | function_call {}
     ;
 
@@ -262,7 +242,7 @@ if_body:
     | statement ELSE statement
 
 while_statement:
-      WHILE '(' expression ')' { is_loop = true; printf("[Line %d] While loop\n", line_num); enter_scope(); } statement { is_loop = false; exit_scope(); }
+      WHILE '(' expression ')' { is_loop = true; printf("[Line %d] While loop\n", line_num); enter_scope(); quad_while_start($3.name) } statement { is_loop = false; exit_scope(); quad_while_end(); }
     ;
 
 do_while_statement:
@@ -320,7 +300,7 @@ function:
             seen_return = false;
         }
         enter_scope(); // Noitce that the function name itself is in a scope higher than the parameters and body 
-        emit_quad("func", $2, NULL, NULL);
+        emit_quad("LABEL", NULL, NULL, $2);
 
       } parameters ')' block {
           if (current_function_name != NULL) {
@@ -332,7 +312,6 @@ function:
               current_return_type = -1;
           } 
           exit_scope(); 
-        emit_quad("endfunc", $2, NULL, NULL);
       }
     | VOID VARIABLE '(' { 
         int idx = add_symbol($2, $1, true);
@@ -437,7 +416,7 @@ void yyerror(const char *format, ...) {
 }
 
 int main(int argc, char **argv) {
-    const char *input_fname = "input.mel";
+    const char *input_fname = "test.mel";
 
     if (argc > 1) {
         input_fname = argv[1];
@@ -457,8 +436,7 @@ int main(int argc, char **argv) {
         exit(1);
     }
     fprintf(stderr, "---------------------ERRORS---------------------\n");
-    quadFile = quad_init_file("./output/quad.txt");
-    quad_set_output("./output/quad.txt", quadFile);
+    quad_init_file();
     yyparse();
     quad_close_table();
     fclose(stdin);

@@ -16,6 +16,7 @@ enum ValueType {
 };
 
 typedef struct {
+    char *name;
     ValueType type;
     struct {
         int ival;
@@ -50,7 +51,7 @@ bool type_mismatch(int a, int b);
 const char* typeToString(int type);
 bool evaluatable(Value a, Value b);
 Value handle_types(Value a, Value b, const char *op);
-char* value_to_string(Value v);
+char* valueToString(Value v);
 Value add_values(Value a, Value b);
 Value sub_values(Value a, Value b);
 Value mul_values(Value a, Value b);
