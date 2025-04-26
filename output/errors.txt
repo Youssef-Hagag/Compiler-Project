@@ -1,4 +1,0 @@
----------------------ERRORS---------------------
-
----------------------Unused Symbols---------------------
-Symbol 'm' of type 'bool' declared at line 44 and not used

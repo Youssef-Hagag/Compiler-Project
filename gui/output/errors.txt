@@ -1,0 +1,12 @@
+<<<<<<< HEAD:output/errors.txt
+---------------------ERRORS---------------------
+
+---------------------Unused Symbols---------------------
+Symbol 'm' of type 'bool' declared at line 44 and not used
+=======
+---------------------ERRORS---------------------
+
+---------------------Unused Symbols---------------------
+Symbol 'm' of type 'bool' declared at line 2 and not used
+Symbol 'l' of type 'int' declared at line 9 and not used
+>>>>>>> b912c67ce4d91ae605682c96a153f019438a89c3:gui/output/errors.txt
