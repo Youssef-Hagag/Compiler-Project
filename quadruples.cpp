@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <vector>
 #include <math.h>
+#include "value.h"
 #define OP_W 20
 #define ARG_W 20
 
@@ -35,6 +36,12 @@ static const char *reset_ops[] = {
     "IF_TRUE_GOTO",
     "GOTO",
     "LABEL",
+    "RETURN",
+    "FUNCTION",
+    "FUNCTION_END",
+    "PARAM",
+    "ARG",
+    "CALL",
 };
 
 static char *new_temp()
@@ -104,7 +111,21 @@ void quad_close_table(void)
 
 char *emit_quad(const char *op, const char *arg1, const char *arg2, const char *res)
 {
-    char *real_res = res ? strdup(res) : new_temp();
+    char *real_res = strdup(res);
+
+    // If the operation is not a math, logical, or comparison operation, reset the temp_counter 
+    // to avoid generating unnecessary temporary variables
+    bool reset = false;
+    for (int i = 0; i < sizeof(reset_ops) / sizeof(reset_ops[0]); i++)
+    {
+        if (strcmp(op, reset_ops[i]) == 0)
+        {
+            temp_counter = 0;
+            reset = true;
+            break;
+        }
+    }
+    if(!reset) real_res = new_temp();
 
     fprintf(g_outputFile,
             "| %-*s | %-*s | %-*s | %-*s |\n",
@@ -112,16 +133,6 @@ char *emit_quad(const char *op, const char *arg1, const char *arg2, const char *
             ARG_W, arg1 ? arg1 : "",
             ARG_W, arg2 ? arg2 : "",
             ARG_W, real_res ? real_res : "");
-
-    // If the operation is not a math, logical, or comparison operation, reset the temp_counter
-    for (int i = 0; i < sizeof(reset_ops) / sizeof(reset_ops[0]); i++)
-    {
-        if (strcmp(op, reset_ops[i]) == 0)
-        {
-            temp_counter = 0;
-            break;
-        }
-    }
 
     return real_res;
 }
@@ -347,4 +358,32 @@ void quad_continue()
     if (continue_labels.empty())
         return;
     emit_quad("GOTO", NULL, NULL, continue_labels.back());
+}
+
+void quad_function_declare(const char *name, const char *return_type) {
+    emit_quad("FUNCTION", return_type, NULL, name);
+}
+
+void quad_function_param(const char *param_name, const char *param_type, const char *default_value) {
+    emit_quad("PARAM", param_type, default_value, param_name);
+}
+
+void quad_function_call(const char *func_name, const std::vector<Value> &args) {
+    // For each argument, generate an ARG quadruple
+    for (size_t i = 0; i < args.size(); i++) {
+        emit_quad("ARG", typeToString(args[i].type), NULL, args[i].name);
+    }
+    
+    // Generate the CALL quadruple
+    char arg_count[16];
+    snprintf(arg_count, sizeof(arg_count), "%zu", args.size());
+    char *ret_val = emit_quad("CALL", func_name, arg_count, NULL);
+}
+
+void quad_function_return(const char *value) {
+    emit_quad("RETURN", value, NULL, NULL);
+}
+
+void quad_function_end(const char *name) {
+    emit_quad("FUNCTION_END", NULL, NULL, name);
 }

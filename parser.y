@@ -87,20 +87,21 @@ statement:
     | do_while_statement
     | for_statement
     | switch_statement
-    | RETURN expression ';' { 
+    | RETURN opt_expression ';' { 
           if(current_return_type == -1) {
               yyerror("Return statement not in function");
           } else {
               seen_return = true;
-              if(current_return_type == TYPE_VOID) {
+              if(current_return_type == TYPE_VOID && $2.name != NULL) {
                   yyerror("Void function cannot return a value");
-              } else if(!type_mismatch(current_return_type, $2.type)) {
+              } else if(current_return_type == TYPE_VOID || !type_mismatch(current_return_type, $2.type)) {
                   printf("[Line %d] Return statement\n", line_num);
+                  emit_quad("RETURN", $2.name, NULL, NULL);
               }
           }
       }
-    | BREAK ';' { if(!is_loop && !is_switch) yyerror("Break statement not in loop or switch"); emit_quad("GOTO", NULL, NULL, break_labels.back()); }
-    | CONTINUE ';' { if(!is_loop) yyerror("Continue statement not in loop"); emit_quad("GOTO", NULL, NULL, continue_labels.back()); }
+    | BREAK ';' { if(!is_loop && !is_switch) yyerror("Break statement not in loop or switch"); quad_break(); }
+    | CONTINUE ';' { if(!is_loop) yyerror("Continue statement not in loop"); quad_continue(); }
     ;
 
 declarations:
@@ -184,7 +185,7 @@ expression:
     | VARIABLE {
           int idx = find_symbol($1);
           if(idx == -1) {
-              yyerror("Undeclared variable used in expression");
+              yyerror("Undeclared variable '%s' used in expression", $1);
               $$ = make_runtime_value(TYPE_INT);
           } 
           else if(is_function(idx)) {
@@ -239,7 +240,7 @@ if_statement:
 
 if_body:
       statement
-    | statement ELSE {{ exit_scope(); quad_if_else(); enter_scope(); }} statement { exit_scope(); }
+    | statement ELSE { enter_scope(); quad_if_else(); } statement { exit_scope(); }
 
 while_statement:
       WHILE '(' expression ')' { is_loop = true; printf("[Line %d] While loop\n", line_num); enter_scope(); quad_while_start($3.name) } statement { is_loop = false; exit_scope(); quad_while_end(); }
@@ -312,15 +313,15 @@ function:
             default_params.clear();
             seen_default_param = false;
             seen_return = false;
+            quad_function_declare($2, typeToString($1));
         }
         enter_scope(); // Noitce that the function name itself is in a scope higher than the parameters and body 
-        emit_quad("LABEL", NULL, NULL, $2);
-
       } parameters ')' block {
           if (current_function_name != NULL) {
               if (current_return_type != TYPE_VOID && !seen_return) {
                   yyerror("Non-void function '%s' does not return a value", current_function_name);
               }
+              quad_function_end(current_function_name);
               add_function(current_function_idx, current_function_name, current_return_type, param_types, default_params);
               free(current_function_name);
               current_return_type = -1;
@@ -338,10 +339,12 @@ function:
             param_types.clear();
             default_params.clear();
             seen_default_param = false;
+            quad_function_declare($2, typeToString($1));
         }
         enter_scope(); // Notice that the function name itself is in a scope higher than the parameters and body 
       } parameters ')' block {
           if (current_function_name != NULL) {
+              quad_function_end(current_function_name);
               add_function(current_function_idx, current_function_name, current_return_type, param_types, default_params);
               free(current_function_name);
               current_return_type = -1;
@@ -368,6 +371,7 @@ parameter:
         add_symbol($2, $1, true);
         param_types.push_back($1);
         default_params.push_back(false);
+        quad_function_param($2, typeToString($1), NULL);
       }
     | TYPE VARIABLE '=' expression_or_assignment // yes...yes parameters can have "x = y = 5" too in c++
       {
@@ -381,13 +385,23 @@ parameter:
         param_types.push_back($1);
         default_params.push_back(true);
         seen_default_param = true;
+        quad_function_param($2, typeToString($1), $4.name);
       }
     ;
 
 function_call:
       VARIABLE '(' argument_list_opt ')' {
           printf("[Line %d] Function call: %s\n", line_num, $1); 
-          check_function_call($1, $3);
+          if(check_function_call($1, $3)){
+            // Convert list of arguments to vector of names
+            std::vector<Value> arg_names;
+            for (int i = 0; i < $3.size; i++) {
+                arg_names.push_back($3.values[i]);
+            }
+            
+            // Add quadruples for function call
+            quad_function_call($1, arg_names);
+          }
           $$ = make_runtime_value(get_function_return_type($1)); 
       }
     ;
@@ -439,6 +453,12 @@ int main(int argc, char **argv) {
             fprintf(stderr, "Error: input file must have a \".mel\" extension (got \"%s\")\n", input_fname);
             return 1;
         }
+    }
+    
+    // Create output directory if it doesn't exist
+    if (system("mkdir output") == -1) {
+        fprintf(stderr, "Error: cannot create output directory\n");
+        return 1;
     }
 
     if (freopen(input_fname, "r", stdin) == NULL) {

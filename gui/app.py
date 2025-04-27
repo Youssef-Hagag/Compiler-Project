@@ -87,7 +87,8 @@ class MelCodeRunnerApp:
         self.highlight_color = "#4f78cc"
         self.text_color = "#D4D4D4"
         
-        self.code_font = tkfont.Font(family="Consolas", size=11)
+        self.code_font = tkfont.Font(family="Consolas", size=14)
+        self.tabs_font = tkfont.Font(family="Consolas", size=10)
         
         self.create_main_layout()
         
@@ -97,7 +98,10 @@ class MelCodeRunnerApp:
         
         # Syntax highlighting for MEL files
         self.keyword_patterns = [
-            r'\b(if|else|while|for|return|break|continue|int|float|void|string)\b',
+            r'\b(if|else|while|for|switch|return|break|continue|do)\b',
+        ]
+        self.datatype_patterns = [
+            r'\b(int|float|char|string|bool|void)\b',
         ]
 
         self.symbol_table = "" #
@@ -149,14 +153,11 @@ class MelCodeRunnerApp:
         notebook = ttk.Notebook(self.main_paned)
         notebook.pack(fill=tk.BOTH, expand=True)
         self.main_paned.add(notebook, weight=1)
-
+        
         # 1) Quads tab
         quads_frame = tk.Frame(notebook, bg=self.bg_color)
         notebook.add(quads_frame, text="Quads")
 
-
-
-        
         quads_header_frame = tk.Frame(quads_frame, bg=self.bg_color)
         quads_header_frame.pack(fill=tk.X)
         
@@ -164,7 +165,7 @@ class MelCodeRunnerApp:
         quads_header.pack(side=tk.LEFT, padx=5, pady=5)
 
         
-        self.quads_text = scrolledtext.ScrolledText(quads_frame, wrap=tk.NONE, bg=self.text_bg, fg=self.text_color, font=self.code_font)
+        self.quads_text = scrolledtext.ScrolledText(quads_frame, wrap=tk.NONE, bg=self.text_bg, fg=self.text_color, font=self.tabs_font)
         self.quads_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
         # 2) Errors tab
@@ -177,7 +178,7 @@ class MelCodeRunnerApp:
         self.errors_text = scrolledtext.ScrolledText(
             errors_frame, wrap=tk.NONE,
             bg=self.text_bg, fg=self.text_color,
-            font=self.code_font)
+            font=self.tabs_font)
         self.errors_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
         # 3) Symbol Table tab
@@ -190,7 +191,7 @@ class MelCodeRunnerApp:
         self.symbols_text = scrolledtext.ScrolledText(
             symbols_frame, wrap=tk.NONE,
             bg=self.text_bg, fg=self.text_color,
-            font=self.code_font)
+            font=self.tabs_font)
         self.symbols_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
 
@@ -225,6 +226,7 @@ class MelCodeRunnerApp:
     def _adjust_font(self, step):
         new_size = max(6, self.code_font.cget("size") + step)
         self.code_font.configure(size=new_size)
+        self.tabs_font.configure(size=new_size - 4)
         self.highlight_syntax()
     
     def upload_file(self):
@@ -269,7 +271,18 @@ class MelCodeRunnerApp:
         # Highlight keywords
         for i, pattern in enumerate(self.keyword_patterns):
             tag_name = f"keyword{i}"
-            self.code_text.tag_configure(tag_name, foreground="#569CD6", font=(self.code_font.cget("family"), self.code_font.cget("size"), "bold"))
+            self.code_text.tag_configure(tag_name, foreground="#a53fd1", font=(self.code_font.cget("family"), self.code_font.cget("size"), "bold"))
+            
+            matches = re.finditer(pattern, content)
+            for match in matches:
+                start_pos = f"1.0+{match.start()}c"
+                end_pos = f"1.0+{match.end()}c"
+                self.code_text.tag_add(tag_name, start_pos, end_pos)
+                
+        # Highlight data types
+        for i, pattern in enumerate(self.datatype_patterns):
+            tag_name = f"datatype{i}"
+            self.code_text.tag_configure(tag_name, foreground="#3251c9", font=(self.code_font.cget("family"), self.code_font.cget("size"), "bold"))
             
             matches = re.finditer(pattern, content)
             for match in matches:
@@ -278,7 +291,9 @@ class MelCodeRunnerApp:
                 self.code_text.tag_add(tag_name, start_pos, end_pos)
         
         string_pattern = r'"[^"]*"'
-        matches = re.finditer(string_pattern, content)
+        char_pattern = r"'[^']'"
+        string_or_char_pattern = f"({string_pattern}|{char_pattern})"
+        matches = re.finditer(string_or_char_pattern, content)
         for match in matches:
             start_pos = f"1.0+{match.start()}c"
             end_pos = f"1.0+{match.end()}c"
@@ -292,9 +307,6 @@ class MelCodeRunnerApp:
             self.code_text.tag_add("comment", start_pos, end_pos)
     
     def run_code(self):
-        if not self.current_file:
-            self.status_var.set("No file loaded. Please upload a file first.")
-            return
         
         temp_file = os.path.join(self.output_dir, "temp.mel")
         with open(temp_file, 'w') as file:
@@ -340,7 +352,7 @@ class MelCodeRunnerApp:
             self.root.after(0, lambda: self.status_var.set(status_msg))
 
         except Exception as e:
-            self.root.after(0, lambda: self.status_var.set(f"Exec error: {e}"))
+            self.root.after(0, lambda e=e: self.status_var.set(f"Error running code: {str(e)}"))
 
 
     
@@ -431,7 +443,28 @@ class MelCodeRunnerApp:
         if first_hit:
             self.code_text.see(first_hit)
     
-
+    def getReady(self):
+        # highlight syntax with each keystroke
+        app.code_text.bind("<KeyRelease>", lambda e: app.highlight_syntax())
+        app.code_text.focus_set()
+        # when the user adds '{' we add a '}' on the same line after it and make the cursor between them
+        def auto_close_brace(event):
+            if event.char == "{":
+                line = app.code_text.get("insert linestart", "insert lineend")
+                if not line.strip().endswith("}"):
+                    app.code_text.insert(tk.INSERT, "}")
+                    app.code_text.mark_set(tk.INSERT, f"{tk.INSERT} - 1 chars")
+                    app.code_text.see(tk.INSERT)
+                    return "break"
+            if event.char == "(":
+                line = app.code_text.get("insert linestart", "insert lineend")
+                if not line.strip().endswith(")"):
+                    app.code_text.insert(tk.INSERT, ")")
+                    app.code_text.mark_set(tk.INSERT, f"{tk.INSERT} - 1 chars")
+                    app.code_text.see(tk.INSERT)
+                    return "break"
+            return None
+        app.code_text.bind("<KeyRelease>", auto_close_brace, add="+")
 
 if __name__ == "__main__":
     root = tk.Tk()
@@ -441,5 +474,7 @@ if __name__ == "__main__":
     style.configure('TPanedwindow', background='#1E1E1E')
     style.configure('Sash', background='#333333', sashthickness=4)
     
+    
     app = MelCodeRunnerApp(root)
+    app.getReady()
     root.mainloop()

@@ -113,6 +113,12 @@ bool check_function_call(const char* name,  const ListValue& args) {
             name, least_required_params, args.size);
         return false;
     }
+
+    if(args.size > info.param_types.size()) {
+        yyerror("Function '%s' expects at most %zu parameters but got %zu", 
+            name, info.param_types.size(), args.size);
+        return false;
+    }
     
     for(size_t i = 0; i < args.size; i++) {
         if(args.values[i].type != info.param_types[i]) {
@@ -221,12 +227,12 @@ void print_symbol_table(const char *filename) {
                     }
                 }
                 // truncate long function signatures
-                std::string func_signature = "(" + param_str + ") → " + typeToString(info.return_type);
-                if (func_signature.length() > 30) {
-                    func_signature = func_signature.substr(0, 27) + "...";
+                std::string func_signature = "(" + param_str + ") -> " + typeToString(info.return_type);
+                if (func_signature.length() > 28) {
+                    func_signature = func_signature.substr(0, 25) + "...";
                 }
                 // if the signature is less than 30 characters, add spaces to fill it
-                while (func_signature.length() < 32) {
+                while (func_signature.length() < 30) {
                     func_signature += " ";
                 }
                 strncpy(type_str, func_signature.c_str(), sizeof(type_str) - 1);

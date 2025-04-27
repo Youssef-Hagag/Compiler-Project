@@ -125,6 +125,12 @@ char* valueToString(Value v) {
         case TYPE_BOOL:
             sprintf(buffer, "%s", v.data.bval ? "true" : "false");
             break;
+        case TYPE_STRING:
+            sprintf(buffer, "%s", v.data.sval);
+            break;
+        case TYPE_VOID:
+            sprintf(buffer, "void");
+            break;
         default:
             strcpy(buffer, "unknown");
     }

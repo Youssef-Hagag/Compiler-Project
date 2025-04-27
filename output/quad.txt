@@ -1,0 +1,50 @@
++----------------------+----------------------+----------------------+----------------------+
+| OP                   | ARG1                 | ARG2                 | RESULT               |
++----------------------+----------------------+----------------------+----------------------+
+| DECLARE              | int                  | 5                    | y                    |
+| +                    | y                    | 1                    | #T1                  |
+| ASSIGN               | #T1                  |                      | #S1                  |
+| ==                   | #S1                  | 1                    | #T2                  |
+| IF_TRUE_GOTO         | #T1                  |                      | #LABEL2              |
+| GOTO                 |                      |                      | #LABEL3              |
+| LABEL                |                      |                      | #LABEL2              |
+| +                    | 1                    | 1                    | #T1                  |
+| ASSIGN               | #T1                  |                      | y                    |
+| GOTO                 |                      |                      | #LABEL1              |
+| LABEL                |                      |                      | #LABEL3              |
+| LABEL                |                      |                      | #LABEL1              |
+| ==                   | 1                    | 2                    | #T1                  |
+| ==                   | 2                    | 3                    | #T2                  |
+| AND                  | #T1                  | #T2                  | #T3                  |
+| ==                   | 1                    | 1                    | #T4                  |
+| ==                   | 2                    | 2                    | #T5                  |
+| AND                  | #T4                  | #T5                  | #T6                  |
+| OR                   | #T3                  | #T6                  | #T7                  |
+| DECLARE              | bool                 | #T7                  | m                    |
+| FUNCTION             | void                 |                      | print                |
+| PARAM                | string               |                      | str                  |
+| RETURN               |                      |                      |                      |
+| FUNCTION_END         |                      |                      | print                |
+| FUNCTION             | int                  |                      | main                 |
+| PARAM                | string               |                      | x                    |
+| PARAM                | string               |                      | y                    |
+| +                    | 5                    | 3                    | #T1                  |
+| PARAM                | int                  | #T1                  | z                    |
+| ==                   | x                    | hey                  | #T1                  |
+| ==                   | y                    | there                | #T2                  |
+| AND                  | #T1                  | #T2                  | #T3                  |
+| IF_FALSE_GOTO        | #T3                  |                      | #LABEL4              |
+| ARG                  | string               |                      | hello world          |
+| CALL                 | print                | 1                    |                      |
+| GOTO                 |                      |                      | #LABEL5              |
+| LABEL                |                      |                      | #LABEL4              |
+| ARG                  | string               |                      | goodbye world        |
+| CALL                 | print                | 1                    |                      |
+| LABEL                |                      |                      | #LABEL5              |
+| RETURN               | z                    |                      |                      |
+| FUNCTION_END         |                      |                      | main                 |
+| +                    | hey                  | x                    | #T1                  |
+| ARG                  | string               |                      | #T1                  |
+| ARG                  | string               |                      | there                |
+| CALL                 | main                 | 2                    |                      |
++----------------------+----------------------+----------------------+----------------------+

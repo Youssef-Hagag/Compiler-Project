@@ -49,6 +49,7 @@
         "xlocinfo": "cpp",
         "xlocnum": "cpp",
         "functional": "cpp",
-        "text_encoding": "cpp"
+        "text_encoding": "cpp",
+        "*.mel": "cpp"
     }
 }

@@ -42,3 +42,19 @@ case 1:
 }
 
 bool m = (1 == 2 && 2 == 3) || (1 == 1 && 2 == 2);
+
+void print( string str){
+    return;
+}
+
+int main(string x, string y, int z = 5 + 3)
+{
+    if(x == "hey" && y == "there"){
+        print("hello world");
+    } else {
+        print("goodbye world");
+    }
+    return z;
+}
+
+main("hey" + "x", "there");
