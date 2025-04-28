@@ -1,0 +1,16 @@
++----------------------+--------------------------------+-------+------+-------+-------+----------------------+
+| Name                 | Type                           | Scope | Line | Init  | Used  | Initial Value        |
++----------------------+--------------------------------+-------+------+-------+-------+----------------------+
+| add                  | (int, int) -> int              | 0     | 1    | Yes   | Yes   | Function             |
+| a                    | int                            | 1     | 1    | Yes   | No    | Runtime              |
+| b                    | int                            | 1     | 1    | Yes   | Yes   | Runtime              |
+| a                    | int                            | 2     | 1    | Yes   | Yes   | 1                    |
+| func                 | () -> void                     | 0     | 3    | Yes   | No    | Function             |
+| main                 | int                            | 0     | 7    | Yes   | No    | Runtime              |
+| flag                 | bool                           | 1     | 10   | Yes   | Yes   | true                 |
+| ch                   | char                           | 1     | 11   | Yes   | No    | X                    |
+| f                    | float                          | 1     | 12   | Yes   | No    | 2.500000             |
+| i                    | int                            | 2     | 16   | Yes   | Yes   | 3                    |
+| k                    | int                            | 3     | 18   | Yes   | Yes   | 0                    |
+| q                    | bool                           | 0     | 67   | Yes   | Yes   | true                 |
++----------------------+--------------------------------+-------+------+-------+-------+----------------------+

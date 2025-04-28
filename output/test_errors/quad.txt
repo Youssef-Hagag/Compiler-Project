@@ -1,0 +1,16 @@
++----------------------+----------------------+----------------------+----------------------+
+| OP                   | ARG1                 | ARG2                 | RESULT               |
++----------------------+----------------------+----------------------+----------------------+
+| DECLARE              | int                  |                      | x                    |
+| FUNCTION             | int                  |                      | add                  |
+| PARAM                | int                  |                      | x                    |
+| PARAM                | int                  |                      | y                    |
+| FUNCTION_END         |                      |                      | add                  |
+| DECLARE              | int                  |                      | non_init             |
+| DECLARE              | int                  | non_init             | init                 |
+| FUNCTION             | int                  |                      | bad_add              |
+| PARAM                | int                  | 5                    | a                    |
+| PARAM                | int                  |                      | b                    |
+| FUNCTION_END         |                      |                      | bad_add              |
+| DECLARE_CONST        | int                  | 0                    | j                    |
++----------------------+----------------------+----------------------+----------------------+

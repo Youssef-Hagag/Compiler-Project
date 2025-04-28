@@ -1,0 +1,26 @@
++----------------------+----------------------+----------------------+----------------------+
+| OP                   | ARG1                 | ARG2                 | RESULT               |
++----------------------+----------------------+----------------------+----------------------+
+| FUNCTION             | int                  |                      | main                 |
+| DECLARE              | int                  | 0                    | scoped               |
+| DECLARE              | int                  | 0                    | i                    |
+| +                    | scoped               | 1                    | #T1                  |
+| ASSIGN               | #T1                  |                      | scoped               |
+| DECLARE              | int                  | 5                    | scoped               |
+| +                    | scoped               | 1                    | #T1                  |
+| ASSIGN               | #T1                  |                      | scoped               |
+| +                    | i                    | scoped               | #T1                  |
+| ASSIGN               | #T1                  |                      | i                    |
+| DECLARE              | int                  | 10                   | scoped               |
+| +                    | i                    | scoped               | #T1                  |
+| ASSIGN               | #T1                  |                      | i                    |
+| DECLARE              | int                  | 5                    | scoped               |
+| +                    | i                    | scoped               | #T1                  |
+| ASSIGN               | #T1                  |                      | i                    |
+| DECLARE              | int                  | 10                   | scoped               |
+| +                    | i                    | scoped               | #T1                  |
+| ASSIGN               | #T1                  |                      | i                    |
+| DECLARE              | int                  | 2                    | scoped               |
+| RETURN               | 0                    |                      |                      |
+| FUNCTION_END         |                      |                      | main                 |
++----------------------+----------------------+----------------------+----------------------+

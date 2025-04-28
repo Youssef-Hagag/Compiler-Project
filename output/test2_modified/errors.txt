@@ -1,0 +1,24 @@
+---------------------ERRORS---------------------
+[Line 8] Error: Type mismatch: cannot assign int to char
+[Line 9] Error: Type mismatch: cannot assign int to char
+[Line 52] Error: Non-void function 'main' does not return a value
+
+---------------------Unused Symbols---------------------
+Symbol 'main' of type 'int' declared at line 1 and not used
+Symbol 'ba' of type 'bool' declared at line 6 and not used
+Symbol 'bb' of type 'bool' declared at line 7 and not used
+Symbol 'sa' of type 'string' declared at line 10 and not used
+Symbol 'r0' of type 'int' declared at line 13 and not used
+Symbol 'r1' of type 'int' declared at line 14 and not used
+Symbol 'r2' of type 'int' declared at line 15 and not used
+Symbol 'r3' of type 'int' declared at line 16 and not used
+Symbol 'r4' of type 'int' declared at line 17 and not used
+Symbol 'rf0' of type 'float' declared at line 19 and not used
+Symbol 'rf1' of type 'float' declared at line 20 and not used
+Symbol 'rf2' of type 'float' declared at line 21 and not used
+Symbol 'rf3' of type 'float' declared at line 22 and not used
+Symbol 'u0' of type 'int' declared at line 36 and not used
+Symbol 'u1' of type 'int' declared at line 37 and not used
+Symbol 'u2' of type 'int' declared at line 38 and not used
+Symbol 'u3' of type 'int' declared at line 39 and not used
+Symbol 'u4' of type 'int' declared at line 40 and not used

@@ -1,0 +1,59 @@
++----------------------+----------------------+----------------------+----------------------+
+| OP                   | ARG1                 | ARG2                 | RESULT               |
++----------------------+----------------------+----------------------+----------------------+
+| FUNCTION             | int                  |                      | main                 |
+| DECLARE_CONST        | int                  | 2                    | sel                  |
+| DECLARE              | int                  | 0                    | x                    |
+| DECLARE              | int                  | 0                    | y                    |
+| ASSIGN               | sel                  |                      | #S1                  |
+| ==                   | #S1                  | 1                    | #T1                  |
+| IF_TRUE_GOTO         | #T1                  |                      | #LABEL2              |
+| GOTO                 |                      |                      | #LABEL3              |
+| LABEL                |                      |                      | #LABEL2              |
+| ASSIGN               | x                    |                      | #T1                  |
+| +                    | x                    | 1                    | #T2                  |
+| ASSIGN               | #T2                  |                      | x                    |
+| GOTO                 |                      |                      | #LABEL4              |
+| LABEL                |                      |                      | #LABEL3              |
+| ==                   | #S1                  | 2                    | #T1                  |
+| IF_TRUE_GOTO         | #T1                  |                      | #LABEL4              |
+| GOTO                 |                      |                      | #LABEL5              |
+| LABEL                |                      |                      | #LABEL4              |
+| +                    | x                    | 1                    | #T1                  |
+| ASSIGN               | #T1                  |                      | x                    |
+| GOTO                 |                      |                      | #LABEL1              |
+| GOTO                 |                      |                      | #LABEL6              |
+| LABEL                |                      |                      | #LABEL5              |
+| ==                   | #S1                  | 3                    | #T1                  |
+| IF_TRUE_GOTO         | #T1                  |                      | #LABEL6              |
+| GOTO                 |                      |                      | #LABEL7              |
+| LABEL                |                      |                      | #LABEL6              |
+| +                    | y                    | 1                    | #T1                  |
+| ASSIGN               | #T1                  |                      | y                    |
+| GOTO                 |                      |                      | #LABEL8              |
+| LABEL                |                      |                      | #LABEL7              |
+| LABEL                |                      |                      | #LABEL8              |
+| ASSIGN               | y                    |                      | #T1                  |
+| +                    | y                    | 1                    | #T2                  |
+| ASSIGN               | #T2                  |                      | y                    |
+| LABEL                |                      |                      | #LABEL1              |
+| DECLARE              | bool                 | true                 | b1                   |
+| IF_FALSE_GOTO        | b1                   |                      | #LABEL9              |
+| +                    | x                    | 1                    | #T1                  |
+| ASSIGN               | #T1                  |                      | x                    |
+| GOTO                 |                      |                      | #LABEL10             |
+| LABEL                |                      |                      | #LABEL9              |
+| NOT                  | b1                   |                      | #T1                  |
+| AND                  | b1                   | #T1                  | #T2                  |
+| IF_FALSE_GOTO        | #T2                  |                      | #LABEL11             |
+| +                    | x                    | 2                    | #T1                  |
+| ASSIGN               | #T1                  |                      | x                    |
+| GOTO                 |                      |                      | #LABEL12             |
+| LABEL                |                      |                      | #LABEL11             |
+| +                    | x                    | 3                    | #T1                  |
+| ASSIGN               | #T1                  |                      | x                    |
+| LABEL                |                      |                      | #LABEL12             |
+| LABEL                |                      |                      | #LABEL10             |
+| RETURN               | x                    |                      |                      |
+| FUNCTION_END         |                      |                      | main                 |
++----------------------+----------------------+----------------------+----------------------+

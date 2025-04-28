@@ -65,7 +65,23 @@
      POW = 281,
      INC = 282,
      DEC = 283,
-     UMINUS = 284
+     BIT_AND = 284,
+     BIT_OR = 285,
+     BIT_XOR = 286,
+     LSHIFT = 287,
+     RSHIFT = 288,
+     BIT_NOT = 289,
+     ADD_ASSIGN = 290,
+     SUB_ASSIGN = 291,
+     MUL_ASSIGN = 292,
+     DIV_ASSIGN = 293,
+     MOD_ASSIGN = 294,
+     BIT_AND_ASSIGN = 295,
+     BIT_OR_ASSIGN = 296,
+     BIT_XOR_ASSIGN = 297,
+     LSHIFT_ASSIGN = 298,
+     RSHIFT_ASSIGN = 299,
+     UMINUS = 300
    };
 #endif
 
@@ -76,7 +92,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 30 "parser.y"
+#line 35 "parser.y"
 
     Value val;
     ListValue list_val;
@@ -86,9 +102,8 @@ typedef union YYSTYPE
 
 
 
-
 /* Line 1676 of yacc.c  */
-#line 92 "parser.tab.h"
+#line 107 "parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

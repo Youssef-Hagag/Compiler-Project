@@ -1,0 +1,7 @@
+---------------------ERRORS---------------------
+
+---------------------Unused Symbols---------------------
+Symbol 'main' of type 'int' declared at line 1 and not used
+Symbol 'scoped' of type 'int' declared at line 3 and not used
+Symbol 'i' of type 'int' declared at line 4 and not used
+Symbol 'scoped' of type 'int' declared at line 23 and not used

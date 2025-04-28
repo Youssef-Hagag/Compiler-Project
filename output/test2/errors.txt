@@ -1,0 +1,87 @@
+---------------------ERRORS---------------------
+[Line 3] Error: syntax error
+[Line 5] Error: syntax error
+[Line 7] Error: syntax error
+[Line 9] Error: syntax error
+[Line 11] Error: syntax error
+[Line 13] Error: Undeclared variable 'ia' used in expression
+[Line 13] Error: Undeclared variable 'ib' used in expression
+[Line 14] Error: Undeclared variable 'ia' used in expression
+[Line 14] Error: Undeclared variable 'ia' used in expression
+[Line 15] Error: Undeclared variable 'ia' used in expression
+[Line 15] Error: Undeclared variable 'ib' used in expression
+[Line 16] Error: Undeclared variable 'ia' used in expression
+[Line 16] Error: Undeclared variable 'ib' used in expression
+[Line 17] Error: Undeclared variable 'ia' used in expression
+[Line 17] Error: Undeclared variable 'ib' used in expression
+[Line 19] Error: Undeclared variable 'fa' used in expression
+[Line 19] Error: Undeclared variable 'fb' used in expression
+[Line 20] Error: Undeclared variable 'fa' used in expression
+[Line 20] Error: Undeclared variable 'fb' used in expression
+[Line 21] Error: Undeclared variable 'fa' used in expression
+[Line 21] Error: Undeclared variable 'fa' used in expression
+[Line 22] Error: Undeclared variable 'fa' used in expression
+[Line 22] Error: Undeclared variable 'fb' used in expression
+[Line 24] Error: Undeclared variable 'ib' used in expression
+[Line 24] Error: Undeclared variable 'ia' used in assignment
+[Line 25] Error: Undeclared variable 'ia' used in expression
+[Line 25] Error: Undeclared variable 'ia' used in assignment
+[Line 26] Error: Undeclared variable 'ia' used in expression
+[Line 26] Error: Undeclared variable 'ia' used in assignment
+[Line 27] Error: Undeclared variable 'ib' used in expression
+[Line 27] Error: Undeclared variable 'ia' used in assignment
+[Line 28] Error: Undeclared variable 'ib' used in expression
+[Line 28] Error: Undeclared variable 'ia' used in assignment
+[Line 30] Error: Undeclared variable 'fb' used in expression
+[Line 30] Error: Undeclared variable 'fa' used in assignment
+[Line 31] Error: Undeclared variable 'fb' used in expression
+[Line 31] Error: Undeclared variable 'fa' used in assignment
+[Line 32] Error: Undeclared variable 'fa' used in expression
+[Line 32] Error: Undeclared variable 'fa' used in assignment
+[Line 33] Error: Undeclared variable 'fb' used in expression
+[Line 33] Error: Undeclared variable 'fa' used in assignment
+[Line 35] Error: syntax error
+[Line 36] Error: Undeclared variable 'ua' used in expression
+[Line 36] Error: Undeclared variable 'ia' used in expression
+[Line 37] Error: Undeclared variable 'ua' used in expression
+[Line 37] Error: Undeclared variable 'ib' used in expression
+[Line 38] Error: Undeclared variable 'ua' used in expression
+[Line 38] Error: Undeclared variable 'ib' used in expression
+[Line 39] Error: Undeclared variable 'ua' used in expression
+[Line 39] Error: Undeclared variable 'ia' used in expression
+[Line 40] Error: Undeclared variable 'ua' used in expression
+[Line 40] Error: Undeclared variable 'ib' used in expression
+[Line 42] Error: Undeclared variable 'ib' used in expression
+[Line 42] Error: Undeclared variable 'ua' used in assignment
+[Line 43] Error: Undeclared variable 'ib' used in expression
+[Line 43] Error: Undeclared variable 'ua' used in assignment
+[Line 44] Error: Undeclared variable 'ia' used in expression
+[Line 44] Error: Undeclared variable 'ua' used in assignment
+[Line 45] Error: Undeclared variable 'ib' used in expression
+[Line 45] Error: Undeclared variable 'ua' used in assignment
+[Line 47] Error: Undeclared variable 'ub' used in expression
+[Line 47] Error: Undeclared variable 'ia' used in assignment
+[Line 48] Error: Undeclared variable 'ia' used in expression
+[Line 48] Error: Undeclared variable 'ia' used in assignment
+[Line 49] Error: Undeclared variable 'ib' used in expression
+[Line 49] Error: Undeclared variable 'ia' used in assignment
+[Line 51] Error: Undeclared variable 'sb' used in expression
+[Line 51] Error: Undeclared variable 'sa' used in assignment
+[Line 52] Error: syntax error
+
+---------------------Unused Symbols---------------------
+Symbol 'main' of type 'int' declared at line 1 and not used
+Symbol 'r0' of type 'int' declared at line 13 and not used
+Symbol 'r1' of type 'int' declared at line 14 and not used
+Symbol 'r2' of type 'int' declared at line 15 and not used
+Symbol 'r3' of type 'int' declared at line 16 and not used
+Symbol 'r4' of type 'int' declared at line 17 and not used
+Symbol 'rf0' of type 'float' declared at line 19 and not used
+Symbol 'rf1' of type 'float' declared at line 20 and not used
+Symbol 'rf2' of type 'float' declared at line 21 and not used
+Symbol 'rf3' of type 'float' declared at line 22 and not used
+Symbol 'u0' of type 'int' declared at line 36 and not used
+Symbol 'u1' of type 'int' declared at line 37 and not used
+Symbol 'u2' of type 'int' declared at line 38 and not used
+Symbol 'u3' of type 'int' declared at line 39 and not used
+Symbol 'u4' of type 'int' declared at line 40 and not used

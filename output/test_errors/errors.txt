@@ -1,0 +1,25 @@
+---------------------ERRORS---------------------
+[Line 3] Error: Symbol 'x' already defined in this scope
+[Line 6] Error: Type mismatch: cannot assign string to int
+[Line 8] Error: Type mismatch: cannot assign string to int
+[Line 12] Error: Undeclared variable 'undeclared' used in assignment
+[Line 16] Error: Variable 'non_init' used before initialization
+[Line 19] Error: Parameter 1 of function 'add' expects type int but got type string
+[Line 23] Error: Non-default parameter 'b' after a default one
+[Line 25] Error: Non-void function 'bad_add' does not return a value
+[Line 28] Error: Break statement not in loop or switch
+[Line 29] Error: Continue statement not in loop
+[Line 30] Error: Return statement not in function
+[Line 33] Error: syntax error
+[Line 35] Error: Cannot assign to constant 'j'
+
+---------------------Unused Symbols---------------------
+Symbol 'x' of type 'int' declared at line 2 and not used
+Symbol 'x' of type 'int' declared at line 7 and not used
+Symbol 'y' of type 'int' declared at line 7 and not used
+Symbol 'non_init' of type 'int' declared at line 15 and not used
+Symbol 'init' of type 'int' declared at line 16 and not used
+Symbol 'bad_add' of type 'int' declared at line 23 and not used
+Symbol 'a' of type 'int' declared at line 23 and not used
+Symbol 'b' of type 'int' declared at line 23 and not used
+Symbol 'j' of type 'int' declared at line 34 and not used

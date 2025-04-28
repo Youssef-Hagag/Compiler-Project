@@ -1,0 +1,14 @@
++----------------------+--------------------------------+-------+------+-------+-------+----------------------+
+| Name                 | Type                           | Scope | Line | Init  | Used  | Initial Value        |
++----------------------+--------------------------------+-------+------+-------+-------+----------------------+
+| x                    | int                            | 0     | 2    | No    | No    | Runtime              |
+| add                  | (int, int) -> int              | 0     | 7    | Yes   | Yes   | Function             |
+| x                    | int                            | 1     | 7    | Yes   | No    | Runtime              |
+| y                    | int                            | 1     | 7    | Yes   | No    | Runtime              |
+| non_init             | int                            | 0     | 15   | No    | No    | Runtime              |
+| init                 | int                            | 0     | 16   | Yes   | No    | Runtime              |
+| bad_add              | (int?, int) -> int             | 0     | 23   | Yes   | No    | Function             |
+| a                    | int                            | 1     | 23   | Yes   | No    | 5                    |
+| b                    | int                            | 1     | 23   | Yes   | No    | Runtime              |
+| j                    | int (const)                    | 0     | 34   | Yes   | No    | 0                    |
++----------------------+--------------------------------+-------+------+-------+-------+----------------------+

@@ -1,0 +1,35 @@
+// Redeclaration
+int x; 
+int x = 5;
+
+// Type mismatching in assignment / function call / return
+int x = "s";
+int add(int x, int y){
+    return "str";
+}
+
+// Accessing undeclared variables / functions
+undeclared = 0;
+
+// Using uninitialized variables
+int non_init;
+int init = non_init;
+
+//Passing wrong parameters in a function call
+add("a", "b");
+
+//Having a non-default parameter after a default one
+//Non-void functions having no return
+int bad_add(int a = 5, int b){
+
+}
+
+//break/continue/return not in their correct scopes
+break;
+continue;
+return;
+
+//Assigning to constant 
+const int i; // syntax error
+const int j = 0;
+j = 5;

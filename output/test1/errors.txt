@@ -1,0 +1,44 @@
+---------------------ERRORS---------------------
+[Line 9] Error: syntax error
+[Line 14] Error: syntax error
+[Line 16] Error: Undeclared variable 'j' used in expression
+[Line 29] Error: Undeclared variable 'repeat' used in expression
+[Line 29] Error: syntax error
+[Line 32] Error: Undeclared variable 'i' used in expression
+[Line 32] Error: Undeclared function 'until' called
+[Line 33] Error: syntax error
+[Line 35] Error: Undeclared variable 'i' used in expression
+[Line 44] Error: Undeclared variable 'i' used in postfix increment
+[Line 48] Error: Undeclared variable 'i' used in assignment
+[Line 49] Error: Undeclared variable 'i' used in assignment
+[Line 50] Error: Undeclared variable 'i' used in assignment
+[Line 51] Error: Undeclared variable 'i' used in assignment
+[Line 52] Error: Undeclared variable 'i' used in assignment
+[Line 53] Error: Undeclared variable 'i' used in assignment
+[Line 54] Error: Undeclared variable 'i' used in assignment
+[Line 55] Error: Undeclared variable 'i' used in assignment
+[Line 56] Error: Undeclared variable 'i' used in assignment
+[Line 57] Error: Undeclared variable 'i' used in assignment
+[Line 58] Error: Undeclared variable 'i' used in expression
+[Line 58] Error: Undeclared variable 'i' used in assignment
+[Line 60] Error: Undeclared variable 'ch' used in postfix increment
+[Line 61] Error: Undeclared variable 'ch' used in prefix decrement
+[Line 63] Error: Undeclared variable 'f' used in assignment
+[Line 64] Error: Undeclared variable 'f' used in assignment
+[Line 65] Error: Undeclared variable 'f' used in assignment
+[Line 68] Error: Undeclared variable 'flag' used in expression
+[Line 68] Error: Undeclared variable 'i' used in expression
+[Line 68] Error: Undeclared variable 'j' used in expression
+[Line 68] Error: Undeclared variable 'flag' used in assignment
+[Line 70] Error: Undeclared variable 't' used in expression
+[Line 70] Error: Undeclared variable 's' used in assignment
+[Line 71] Error: Undeclared variable 'i' used in expression
+[Line 71] Error: Undeclared variable 'j' used in expression
+[Line 72] Error: syntax error
+
+---------------------Unused Symbols---------------------
+Symbol 'a' of type 'int' declared at line 1 and not used
+Symbol 'func' of type 'void' declared at line 3 and not used
+Symbol 'main' of type 'int' declared at line 7 and not used
+Symbol 'ch' of type 'char' declared at line 11 and not used
+Symbol 'f' of type 'float' declared at line 12 and not used

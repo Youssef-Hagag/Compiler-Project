@@ -1,0 +1,79 @@
++----------------------+----------------------+----------------------+----------------------+
+| OP                   | ARG1                 | ARG2                 | RESULT               |
++----------------------+----------------------+----------------------+----------------------+
+| FUNCTION             | int                  |                      | main                 |
+| DECLARE              | int                  | 12                   | ia                   |
+| DECLARE              | int                  | 5                    | ib                   |
+| DECLARE              | float                | 7.500000             | fa                   |
+| DECLARE              | float                | 2.500000             | fb                   |
+| DECLARE              | bool                 | true                 | ba                   |
+| DECLARE              | bool                 | false                | bb                   |
+| DECLARE              | string               | foo                  | sa                   |
+| DECLARE              | string               | bar                  | sb                   |
+| +                    | ia                   | ib                   | #T1                  |
+| DECLARE              | int                  | #T1                  | r0                   |
+| -                    | ia                   | ia                   | #T1                  |
+| DECLARE              | int                  | #T1                  | r1                   |
+| *                    | ia                   | ib                   | #T1                  |
+| DECLARE              | int                  | #T1                  | r2                   |
+| +                    | ib                   | 1                    | #T1                  |
+| /                    | ia                   | #T1                  | #T2                  |
+| DECLARE              | int                  | #T2                  | r3                   |
+| %                    | ia                   | ib                   | #T1                  |
+| DECLARE              | int                  | #T1                  | r4                   |
+| +                    | fa                   | fb                   | #T1                  |
+| DECLARE              | float                | #T1                  | rf0                  |
+| -                    | fa                   | fb                   | #T1                  |
+| DECLARE              | float                | #T1                  | rf1                  |
+| *                    | fa                   | fa                   | #T1                  |
+| DECLARE              | float                | #T1                  | rf2                  |
+| /                    | fa                   | fb                   | #T1                  |
+| DECLARE              | float                | #T1                  | rf3                  |
+| +                    | ia                   | ib                   | #T1                  |
+| ASSIGN               | #T1                  |                      | ia                   |
+| -                    | ia                   | ia                   | #T1                  |
+| ASSIGN               | #T1                  |                      | ia                   |
+| *                    | ia                   | ia                   | #T1                  |
+| ASSIGN               | #T1                  |                      | ia                   |
+| /                    | ia                   | ib                   | #T1                  |
+| ASSIGN               | #T1                  |                      | ia                   |
+| %                    | ia                   | ib                   | #T1                  |
+| ASSIGN               | #T1                  |                      | ia                   |
+| +                    | fa                   | fb                   | #T1                  |
+| ASSIGN               | #T1                  |                      | fa                   |
+| -                    | fa                   | fb                   | #T1                  |
+| ASSIGN               | #T1                  |                      | fa                   |
+| *                    | fa                   | fa                   | #T1                  |
+| ASSIGN               | #T1                  |                      | fa                   |
+| /                    | fa                   | fb                   | #T1                  |
+| ASSIGN               | #T1                  |                      | fa                   |
+| DECLARE              | int                  | 1                    | ua                   |
+| DECLARE              | int                  | 2                    | ub                   |
+| BIT_AND              | ua                   | ia                   | #T1                  |
+| DECLARE              | int                  | #T1                  | u0                   |
+| BIT_OR               | ua                   | ib                   | #T1                  |
+| DECLARE              | int                  | #T1                  | u1                   |
+| BIT_XOR              | ua                   | ib                   | #T1                  |
+| DECLARE              | int                  | #T1                  | u2                   |
+| LSHIFT               | ua                   | ia                   | #T1                  |
+| DECLARE              | int                  | #T1                  | u3                   |
+| RSHIFT               | ua                   | ib                   | #T1                  |
+| DECLARE              | int                  | #T1                  | u4                   |
+| BIT_OR               | ua                   | ib                   | #T1                  |
+| ASSIGN               | #T1                  |                      | ua                   |
+| BIT_XOR              | ua                   | ib                   | #T1                  |
+| ASSIGN               | #T1                  |                      | ua                   |
+| LSHIFT               | ua                   | ia                   | #T1                  |
+| ASSIGN               | #T1                  |                      | ua                   |
+| RSHIFT               | ua                   | ib                   | #T1                  |
+| ASSIGN               | #T1                  |                      | ua                   |
+| BIT_AND              | ia                   | ub                   | #T1                  |
+| ASSIGN               | #T1                  |                      | ia                   |
+| BIT_OR               | ia                   | ia                   | #T1                  |
+| ASSIGN               | #T1                  |                      | ia                   |
+| BIT_XOR              | ia                   | ib                   | #T1                  |
+| ASSIGN               | #T1                  |                      | ia                   |
+| +                    | sa                   | sb                   | #T1                  |
+| ASSIGN               | #T1                  |                      | sa                   |
+| FUNCTION_END         |                      |                      | main                 |
++----------------------+----------------------+----------------------+----------------------+

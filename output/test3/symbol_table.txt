@@ -1,0 +1,24 @@
++----------------------+--------------------------------+-------+------+-------+-------+----------------------+
+| Name                 | Type                           | Scope | Line | Init  | Used  | Initial Value        |
++----------------------+--------------------------------+-------+------+-------+-------+----------------------+
+| add                  | (int, int?, int?) -> int       | 0     | 1    | Yes   | Yes   | Function             |
+| a                    | int                            | 1     | 1    | Yes   | Yes   | Runtime              |
+| b                    | int                            | 1     | 1    | Yes   | Yes   | 10                   |
+| c                    | int                            | 1     | 1    | Yes   | Yes   | 20                   |
+| power                | (float, int?) -> float         | 0     | 5    | Yes   | Yes   | Function             |
+| base                 | float                          | 1     | 5    | Yes   | Yes   | Runtime              |
+| exp                  | int                            | 1     | 5    | Yes   | Yes   | 2                    |
+| res                  | float                          | 1     | 6    | Yes   | Yes   | 1.000000             |
+| i                    | int                            | 2     | 7    | Yes   | Yes   | 0                    |
+| is_even              | (int) -> bool                  | 0     | 13   | Yes   | No    | Function             |
+| n                    | int                            | 1     | 13   | Yes   | Yes   | Runtime              |
+| toggle               | (bool?) -> bool                | 0     | 17   | Yes   | Yes   | Function             |
+| v                    | bool                           | 1     | 17   | Yes   | Yes   | true                 |
+| main                 | () -> int                      | 0     | 21   | Yes   | No    | Function             |
+| i                    | int                            | 1     | 23   | Yes   | Yes   | 3                    |
+| f                    | float                          | 1     | 24   | Yes   | No    | Runtime              |
+| flag1                | bool                           | 1     | 25   | Yes   | No    | Runtime              |
+| flag2                | bool                           | 1     | 26   | Yes   | No    | Runtime              |
+| scoped               | int                            | 2     | 29   | Yes   | No    | 5                    |
+| scoped               | int                            | 3     | 31   | Yes   | Yes   | 10                   |
++----------------------+--------------------------------+-------+------+-------+-------+----------------------+

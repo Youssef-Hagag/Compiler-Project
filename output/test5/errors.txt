@@ -1,0 +1,4 @@
+---------------------ERRORS---------------------
+
+---------------------Unused Symbols---------------------
+Symbol 'main' of type 'int' declared at line 1 and not used

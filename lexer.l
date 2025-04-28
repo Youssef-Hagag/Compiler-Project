@@ -68,6 +68,24 @@ int line_num = 1;
 "++"   { return INC; }
 "--"   { return DEC; }
 
+"<<"  { return LSHIFT; }
+">>"  { return RSHIFT; }
+"~"   { return BIT_NOT; }
+"&"   { return BIT_AND; }
+"|"   { return BIT_OR; }
+"^"   { return BIT_XOR; }
+
+"+="  { return ADD_ASSIGN; }
+"-="  { return SUB_ASSIGN; }
+"*="  { return MUL_ASSIGN; }
+"/="  { return DIV_ASSIGN; }
+"%="  { return MOD_ASSIGN; }
+"|="  { return BIT_OR_ASSIGN; }
+"&="  { return BIT_AND_ASSIGN; }
+"^="  { return BIT_XOR_ASSIGN; }
+"<<=" { return LSHIFT_ASSIGN; }
+">>=" { return RSHIFT_ASSIGN; }
+
 [+\-*/=%!]  { return *yytext; }
 [{}();,:]   { return *yytext; }
 

@@ -11,7 +11,12 @@
 
 extern int yylex(void);
 void yyerror(const char *s, ...);
+Value handle_unary_op(const char* op_name, const char* op_code, char* var_name, bool is_prefix);
+void handle_assignment(const char* var, Value expr, const char* op, int line_num);
 extern int line_num;
+
+// For multiple declarations
+int current_decl_type;
 
 // Function handling
 char* current_function_name;
@@ -33,7 +38,6 @@ int is_switch = 0;
     char *str;
     char *relop;
     int type_val;
-
 }
 
 /* Token declarations */
@@ -42,37 +46,41 @@ int is_switch = 0;
 %token <type_val> TYPE VOID
 %token <relop> RELOP
 %token IF ELSE WHILE DO FOR RETURN SWITCH CASE DEFAULT BREAK CONTINUE CONST
-%token LAND LOR POW INC DEC
+%token LAND LOR POW INC DEC BIT_AND BIT_OR BIT_XOR LSHIFT RSHIFT BIT_NOT
+%token ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN
+%token BIT_AND_ASSIGN BIT_OR_ASSIGN BIT_XOR_ASSIGN LSHIFT_ASSIGN RSHIFT_ASSIGN
 
 /* Non-terminals producing a Value */
-%type <val> expression opt_expression declaration assignment opt_assignment expression_or_assignment statement if_statement while_statement 
-%type <val> do_while_statement for_statement switch_statement case_list function
-%type <val> parameters parameter_list function_call program block declarations statements
+%type <val> expression opt_expression assignment opt_assignment expression_or_assignment 
+%type <val> parameters parameter_list function_call function
 %type <list_val> argument_list_opt non_empty_argument_list
 
 /* Operator precedence - lowest first */
 %right '='
 %left LOR
 %left LAND
+%left BIT_OR
+%left BIT_XOR
+%left BIT_AND
 %left RELOP
+%left LSHIFT RSHIFT
 %left '+' '-'
 %left '*' '/' '%'
-%right UMINUS '!'
+%right UMINUS '!' BIT_NOT
 %right POW
 
 %%
 
 // The program starts with zero or more statements, or function definitions
 program:
-
       /* empty */ { }
-    | program statement { $$ = $2; }
-    | program function { $$ = $2; }
+    | program statement { }
+    | program function { }
     ;
 
 statements:
       /* empty */ {}
-    | statements statement { $$ = $2; }
+    | statements statement {}
     ;
 
 statement:
@@ -143,31 +151,45 @@ declaration:
     ;
 
 block:
-      '{' { enter_block_scope(); } declarations statements '}' { exit_scope(); $$ = $4; }
+      '{' { enter_block_scope(); } declarations statements '}' { exit_scope(); }
     ;
 
 assignment:
       VARIABLE '=' expression_or_assignment {
-          printf("[Line %d] Assignment: %s = ...\n", line_num, $1);
-          int idx = find_symbol($1);
-          if(idx == -1) {
-              yyerror("Undeclared variable '%s' used in assignment", $1);
-          } 
-          else if(is_function(idx)) {
-              yyerror("Function '%s' used as variable", $1);
-          }
-          else {
-              if(symbol_table.table[idx].init_value.is_const) {
-                  yyerror("Cannot assign to constant '%s'", $1);
-              }
-              // check type compatibility during assignment
-              if(!type_mismatch(symbol_table.table[idx].type, $3.type)){
-                emit_quad("ASSIGN", $3.name, NULL, $1);
-              }
-          }
-
+          handle_assignment($1, $3, NULL, line_num);
       }
-    ;
+    | VARIABLE ADD_ASSIGN expression_or_assignment {
+          handle_assignment($1, $3, "+", line_num);
+      }
+    | VARIABLE SUB_ASSIGN expression_or_assignment {
+          handle_assignment($1, $3, "-", line_num);
+      }
+    | VARIABLE MUL_ASSIGN expression_or_assignment {
+          handle_assignment($1, $3, "*", line_num);
+      }
+    | VARIABLE DIV_ASSIGN expression_or_assignment {
+          handle_assignment($1, $3, "/", line_num);
+      }
+    | VARIABLE MOD_ASSIGN expression_or_assignment {
+          handle_assignment($1, $3, "%", line_num);
+      }
+    | VARIABLE BIT_OR_ASSIGN expression_or_assignment {
+          handle_assignment($1, $3, "BIT_OR", line_num);
+      }
+    | VARIABLE BIT_AND_ASSIGN expression_or_assignment {
+          handle_assignment($1, $3, "BIT_AND", line_num);
+      }
+    | VARIABLE BIT_XOR_ASSIGN expression_or_assignment {
+          handle_assignment($1, $3, "BIT_XOR", line_num);
+      }
+    | VARIABLE LSHIFT_ASSIGN expression_or_assignment {
+          handle_assignment($1, $3, "LSHIFT", line_num);
+      }
+    | VARIABLE RSHIFT_ASSIGN expression_or_assignment {
+          handle_assignment($1, $3, "RSHIFT", line_num);
+      }
+;
+
 
 // Used for x = y = 5
 expression_or_assignment:
@@ -219,84 +241,17 @@ expression:
     | expression LOR expression { $$ = or_values($1, $3); $$.name = emit_quad("OR", $1.name, $3.name, NULL); }
     | '(' expression ')' { $$ = $2; }
     | expression RELOP expression { $$ = compare_values($1, $3, $2); $$.name = emit_quad($2, $1.name, $3.name, NULL); }
+    | expression LSHIFT expression { $$ = lshift_values($1, $3); $$.name = emit_quad("LSHIFT", $1.name, $3.name, NULL); }
+    | expression RSHIFT expression { $$ = rshift_values($1, $3); $$.name = emit_quad("RSHIFT", $1.name, $3.name, NULL); }
+    | expression BIT_AND expression { $$ = bit_and_values($1, $3); $$.name = emit_quad("BIT_AND", $1.name, $3.name, NULL); }
+    | expression BIT_OR expression { $$ = bit_or_values($1, $3); $$.name = emit_quad("BIT_OR", $1.name, $3.name, NULL); }
+    | expression BIT_XOR expression { $$ = bit_xor_values($1, $3); $$.name = emit_quad("BIT_XOR", $1.name, $3.name, NULL); }
+    | BIT_NOT expression { $$ = bit_not_value($2); $$.name = emit_quad("BIT_NOT", $2.name, NULL, NULL); }
     | function_call {}
-    | INC VARIABLE {
-        int idx = find_symbol($2);
-        if(idx == -1) {
-            yyerror("Undeclared variable '%s' used in prefix increment", $2);
-            $$ = make_runtime_value(TYPE_INT);
-        } 
-        else if(is_function(idx)) {
-            yyerror("Function '%s' used as variable in increment", $2);
-            $$ = make_runtime_value(symbol_table.table[idx].type);
-        }
-        else if(symbol_table.table[idx].init_value.is_const) {
-            yyerror("Cannot increment constant '%s'", $2);
-            $$ = make_runtime_value(symbol_table.table[idx].type);
-        }
-        else {
-            $$ = make_runtime_value(symbol_table.table[idx].type);
-            $$.name = quad_prefix("INC", $2);
-        }
-      }
-    | DEC VARIABLE {
-          int idx = find_symbol($2);
-          if(idx == -1) {
-              yyerror("Undeclared variable '%s' used in prefix decrement", $2);
-              $$ = make_runtime_value(TYPE_INT);
-          } 
-          else if(is_function(idx)) {
-              yyerror("Function '%s' used as variable in decrement", $2);
-              $$ = make_runtime_value(symbol_table.table[idx].type);
-          }
-          else if(symbol_table.table[idx].init_value.is_const) {
-              yyerror("Cannot decrement constant '%s'", $2);
-              $$ = make_runtime_value(symbol_table.table[idx].type);
-          }
-          else {
-              $$ = make_runtime_value(symbol_table.table[idx].type);
-              $$.name = quad_prefix("DEC", $2);
-          }
-      }
-    | VARIABLE INC {
-          int idx = find_symbol($1);
-          if(idx == -1) {
-              yyerror("Undeclared variable '%s' used in postfix increment", $1);
-              $$ = make_runtime_value(TYPE_INT);
-          } 
-          else if(is_function(idx)) {
-              yyerror("Function '%s' used as variable in increment", $1);
-              $$ = make_runtime_value(symbol_table.table[idx].type);
-          }
-          else if(symbol_table.table[idx].init_value.is_const) {
-              yyerror("Cannot increment constant '%s'", $1);
-              $$ = make_runtime_value(symbol_table.table[idx].type);
-          }
-          else {
-              $$ = make_runtime_value(symbol_table.table[idx].type);
-              $$.name = quad_postfix("INC", $1);
-          }
-      }
-    | VARIABLE DEC {
-          int idx = find_symbol($1);
-          if(idx == -1) {
-              yyerror("Undeclared variable '%s' used in postfix decrement", $1);
-              $$ = make_runtime_value(TYPE_INT);
-          } 
-          else if(is_function(idx)) {
-              yyerror("Function '%s' used as variable in decrement", $1);
-              $$ = make_runtime_value(symbol_table.table[idx].type);
-          }
-          else if(symbol_table.table[idx].init_value.is_const) {
-              yyerror("Cannot decrement constant '%s'", $1);
-              $$ = make_runtime_value(symbol_table.table[idx].type);
-          }
-          else {
-              $$ = make_runtime_value(symbol_table.table[idx].type);
-              $$.name = quad_postfix("DEC", $1);
-          }
-      }
-    ;
+    | INC VARIABLE { $$ = handle_unary_op("increment", "INC", $2, true); }
+    | DEC VARIABLE { $$ = handle_unary_op("decrement", "DEC", $2, true); }
+    | VARIABLE INC { $$ = handle_unary_op("increment", "INC", $1, false); }
+    | VARIABLE DEC { $$ = handle_unary_op("decrement", "DEC", $1, false); }
 
 opt_expression:
       /* empty */ { $$.name = NULL; }
@@ -332,7 +287,7 @@ for_statement:
           quad_for_start(); 
       } opt_expression { 
           quad_for_condition($7.name);
-      } ';' opt_assignment
+      } ';' expression_or_assignment
       {
         quad_for_skip();
       }
@@ -348,7 +303,7 @@ for_statement:
           quad_for_start(); 
       } opt_expression { 
           quad_for_condition($6.name);
-      } ';' opt_assignment
+      } ';' expression_or_assignment
       {
           quad_for_skip();
       }
@@ -424,7 +379,7 @@ function:
           } 
           exit_scope(); 
       }
-    | error '}' { yyerrok; exit_scope(); printf("skipping function body on line %d\n", line_num); } // Error recovery: skip to the next closing brace
+    | error '}' { yyerrok; exit_scope(); } // Error recovery: skip to the next closing brace
     ;
 
 parameters:
@@ -517,16 +472,83 @@ void yyerror(const char *format, ...) {
     va_end(args);
 }
 
+Value handle_unary_op(const char* op_name, const char* op_code, char* var_name, bool is_prefix) {
+    Value result;
+    int idx = find_symbol(var_name);
+    
+    if (idx == -1) {
+        yyerror("Undeclared variable '%s' used in %s %s", var_name, 
+                is_prefix ? "prefix" : "postfix", op_name);
+        result = make_runtime_value(TYPE_INT);
+    } 
+    else if (is_function(idx)) {
+        yyerror("Function '%s' used as variable in %s", var_name, op_name);
+        result = make_runtime_value(symbol_table.table[idx].type);
+    }
+    else if (symbol_table.table[idx].type != TYPE_INT && symbol_table.table[idx].type != TYPE_FLOAT) {
+        yyerror("Invalid type for %s '%s'", op_name, var_name);
+        result = make_runtime_value(symbol_table.table[idx].type);
+    }
+    else if (symbol_table.table[idx].is_initialized == false) {
+        yyerror("Variable '%s' used before initialization in %s", var_name, op_name);
+        result = make_runtime_value(symbol_table.table[idx].type);
+        result.name = symbol_table.table[idx].name;
+    }
+    else if (symbol_table.table[idx].init_value.is_const) {
+        yyerror("Cannot %s constant '%s'", op_name, var_name);
+        result = make_runtime_value(symbol_table.table[idx].type);
+    }
+    else {
+        symbol_table.table[idx].is_used = true;
+        result = make_runtime_value(symbol_table.table[idx].type);
+        result.name = is_prefix 
+            ? quad_prefix(op_code, var_name)
+            : quad_postfix(op_code, var_name);
+    }
+    
+    return result;
+}
+
+void handle_assignment(const char* var, Value expr, const char* op, int line_num)
+{
+    printf("[Line %d] Assignment: %s %s ...\n", line_num, var, op ? op : "=");
+    
+    int idx = find_symbol(var);
+    if(idx == -1) {
+        yyerror("Undeclared variable '%s' used in assignment", var);
+    }
+    else if(is_function(idx)) {
+        yyerror("Function '%s' used as variable", var);
+    }
+    else {
+        if(symbol_table.table[idx].init_value.is_const) {
+            yyerror("Cannot assign to constant '%s'", var);
+        }
+        else if(!type_mismatch(symbol_table.table[idx].type, expr.type)) {
+            if(op == NULL) {
+                // Simple assignment '='
+                emit_quad("ASSIGN", expr.name, NULL, var);
+            }
+            else {
+                // Compound assignment
+                char* tmp = emit_quad(op, var, expr.name, NULL);
+                emit_quad("ASSIGN", tmp, NULL, var);
+            }
+        }
+    }
+}
+
+
 int main(int argc, char **argv) {
     const char *input_fname = "input.mel";
 
     if (argc > 1) {
         input_fname = argv[1];
-        size_t len = strlen(input_fname);
-        if (len < 5 || strcmp(input_fname + len - 4, ".mel") != 0) {
-            fprintf(stderr, "Error: input file must have a \".mel\" extension (got \"%s\")\n", input_fname);
-            return 1;
-        }
+        // size_t len = strlen(input_fname);
+        // if (len < 5 || strcmp(input_fname + len - 4, ".mel") != 0) {
+        //     fprintf(stderr, "Error: input file must have a \".mel\" extension (got \"%s\")\n", input_fname);
+        //     return 1;
+        // }
     }
     
     // Create output directory if it doesn't exist

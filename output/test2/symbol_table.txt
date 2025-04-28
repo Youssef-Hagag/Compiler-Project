@@ -1,0 +1,19 @@
++----------------------+--------------------------------+-------+------+-------+-------+----------------------+
+| Name                 | Type                           | Scope | Line | Init  | Used  | Initial Value        |
++----------------------+--------------------------------+-------+------+-------+-------+----------------------+
+| main                 | int                            | 0     | 1    | Yes   | No    | Runtime              |
+| r0                   | int                            | 1     | 13   | Yes   | No    | Runtime              |
+| r1                   | int                            | 1     | 14   | Yes   | No    | Runtime              |
+| r2                   | int                            | 1     | 15   | Yes   | No    | Runtime              |
+| r3                   | int                            | 1     | 16   | Yes   | No    | Runtime              |
+| r4                   | int                            | 1     | 17   | Yes   | No    | Runtime              |
+| rf0                  | float                          | 1     | 19   | Yes   | No    | Runtime              |
+| rf1                  | float                          | 1     | 20   | Yes   | No    | Runtime              |
+| rf2                  | float                          | 1     | 21   | Yes   | No    | Runtime              |
+| rf3                  | float                          | 1     | 22   | Yes   | No    | Runtime              |
+| u0                   | int                            | 1     | 36   | Yes   | No    | Runtime              |
+| u1                   | int                            | 1     | 37   | Yes   | No    | Runtime              |
+| u2                   | int                            | 1     | 38   | Yes   | No    | Runtime              |
+| u3                   | int                            | 1     | 39   | Yes   | No    | Runtime              |
+| u4                   | int                            | 1     | 40   | Yes   | No    | Runtime              |
++----------------------+--------------------------------+-------+------+-------+-------+----------------------+

@@ -62,6 +62,12 @@ Value neg_value(Value a);
 Value and_values(Value a, Value b);
 Value or_values(Value a, Value b);
 Value not_value(Value a);
+Value bit_and_values(Value a, Value b);
+Value bit_or_values(Value a, Value b);
+Value bit_xor_values(Value a, Value b);
+Value bit_not_value(Value a);
+Value lshift_values(Value a, Value b);
+Value rshift_values(Value a, Value b);
 Value compare_values(Value a, Value b, const char *op);
 
 #endif // VALUE_H

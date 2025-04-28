@@ -1,0 +1,98 @@
++----------------------+----------------------+----------------------+----------------------+
+| OP                   | ARG1                 | ARG2                 | RESULT               |
++----------------------+----------------------+----------------------+----------------------+
+| FUNCTION             | int                  |                      | add                  |
+| PARAM                | int                  |                      | a                    |
+| PARAM                | int                  |                      | b                    |
+| DECLARE              | int                  | 1                    | a                    |
+| +                    | a                    | b                    | #T1                  |
+| ASSIGN               | #T1                  |                      | a                    |
+| +                    | a                    | b                    | #T1                  |
+| RETURN               | #T1                  |                      |                      |
+| FUNCTION_END         |                      |                      | add                  |
+| FUNCTION             | void                 |                      | func                 |
+| RETURN               |                      |                      |                      |
+| FUNCTION_END         |                      |                      | func                 |
+| FUNCTION             | int                  |                      | main                 |
+| DECLARE              | bool                 | true                 | flag                 |
+| DECLARE              | char                 | X                    | ch                   |
+| DECLARE              | float                | 2.500000             | f                    |
+| DECLARE              | int                  | 3                    | i                    |
+| +                    | i                    | 0                    | #T1                  |
+| ASSIGN               | #T1                  |                      | i                    |
+| DECLARE              | int                  | 0                    | k                    |
+| LABEL                |                      |                      | #LABEL1              |
+| <                    | k                    | 3                    | #T1                  |
+| IF_FALSE_GOTO        | #T1                  |                      | #LABEL4              |
+| GOTO                 |                      |                      | #LABEL3              |
+| LABEL                |                      |                      | #LABEL2              |
+| ASSIGN               | k                    |                      | #T1                  |
+| +                    | k                    | 1                    | #T2                  |
+| ASSIGN               | #T2                  |                      | k                    |
+| GOTO                 |                      |                      | #LABEL1              |
+| LABEL                |                      |                      | #LABEL3              |
+| +                    | i                    | k                    | #T1                  |
+| ASSIGN               | #T1                  |                      | i                    |
+| <                    | i                    | 10                   | #T1                  |
+| LABEL                |                      |                      | #LABEL5              |
+| IF_FALSE_GOTO        | #T1                  |                      | #LABEL6              |
+| BIT_AND              | i                    | 1                    | #T1                  |
+| ==                   | #T1                  | 0                    | #T2                  |
+| ASSIGN               | #T2                  |                      | flag                 |
+| IF_FALSE_GOTO        | flag                 |                      | #LABEL7              |
+| GOTO                 |                      |                      | #LABEL8              |
+| LABEL                |                      |                      | #LABEL7              |
+| ASSIGN               | k                    |                      | #T1                  |
+| +                    | k                    | 1                    | #T2                  |
+| ASSIGN               | #T2                  |                      | k                    |
+| LABEL                |                      |                      | #LABEL8              |
+| +                    | i                    | 1                    | #T1                  |
+| ASSIGN               | #T1                  |                      | i                    |
+| >=                   | i                    | 7                    | #T1                  |
+| IF_FALSE_GOTO        | #T1                  |                      | #LABEL9              |
+| GOTO                 |                      |                      | #LABEL6              |
+| LABEL                |                      |                      | #LABEL9              |
+| GOTO                 |                      |                      | #LABEL5              |
+| LABEL                |                      |                      | #LABEL6              |
+| ==                   | i                    | 4                    | #T1                  |
+| IF_FALSE_GOTO        | #T1                  |                      | #LABEL11             |
+| GOTO                 |                      |                      | #LABEL1              |
+| LABEL                |                      |                      | #LABEL11             |
+| GOTO                 |                      |                      | #LABEL2              |
+| LABEL                |                      |                      | #LABEL4              |
+| ==                   | 0                    | 0                    | #T1                  |
+| ASSIGN               | 0                    |                      | #S1                  |
+| ==                   | #S1                  | 0                    | #T1                  |
+| IF_TRUE_GOTO         | #T1                  |                      | #LABEL14             |
+| GOTO                 |                      |                      | #LABEL15             |
+| LABEL                |                      |                      | #LABEL14             |
+| GOTO                 |                      |                      | #LABEL16             |
+| LABEL                |                      |                      | #LABEL15             |
+| ==                   | #S1                  | 1                    | #T1                  |
+| IF_TRUE_GOTO         | #T1                  |                      | #LABEL16             |
+| GOTO                 |                      |                      | #LABEL17             |
+| LABEL                |                      |                      | #LABEL16             |
+| GOTO                 |                      |                      | #LABEL13             |
+| GOTO                 |                      |                      | #LABEL18             |
+| LABEL                |                      |                      | #LABEL17             |
+| ==                   | #S1                  | 2                    | #T1                  |
+| IF_TRUE_GOTO         | #T1                  |                      | #LABEL18             |
+| GOTO                 |                      |                      | #LABEL19             |
+| LABEL                |                      |                      | #LABEL18             |
+| GOTO                 |                      |                      | #LABEL13             |
+| GOTO                 |                      |                      | #LABEL20             |
+| LABEL                |                      |                      | #LABEL19             |
+| LABEL                |                      |                      | #LABEL20             |
+| LABEL                |                      |                      | #LABEL13             |
+| BIT_NOT              | 0                    |                      | #T1                  |
+| DECLARE              | bool                 | true                 | q                    |
+| NOT                  | 0                    |                      | #T1                  |
+| NOT                  | q                    |                      | #T2                  |
+| AND                  | #T1                  | #T2                  | #T3                  |
+| >=                   | 0                    | 0                    | #T4                  |
+| OR                   | #T3                  | #T4                  | #T5                  |
+| ARG                  | int                  |                      | 0                    |
+| ARG                  | int                  |                      | 0                    |
+| CALL                 | add                  | 2                    |                      |
+| RETURN               | 0                    |                      |                      |
++----------------------+----------------------+----------------------+----------------------+

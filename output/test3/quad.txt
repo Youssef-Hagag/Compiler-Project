@@ -1,0 +1,90 @@
++----------------------+----------------------+----------------------+----------------------+
+| OP                   | ARG1                 | ARG2                 | RESULT               |
++----------------------+----------------------+----------------------+----------------------+
+| FUNCTION             | int                  |                      | add                  |
+| PARAM                | int                  |                      | a                    |
+| PARAM                | int                  | 10                   | b                    |
+| PARAM                | int                  | 20                   | c                    |
+| +                    | a                    | b                    | #T1                  |
+| +                    | #T1                  | c                    | #T2                  |
+| RETURN               | #T2                  |                      |                      |
+| FUNCTION_END         |                      |                      | add                  |
+| FUNCTION             | float                |                      | power                |
+| PARAM                | float                |                      | base                 |
+| PARAM                | int                  | 2                    | exp                  |
+| DECLARE              | float                | 1.000000             | res                  |
+| DECLARE              | int                  | 0                    | i                    |
+| LABEL                |                      |                      | #LABEL1              |
+| <                    | i                    | exp                  | #T1                  |
+| IF_FALSE_GOTO        | #T1                  |                      | #LABEL4              |
+| GOTO                 |                      |                      | #LABEL3              |
+| LABEL                |                      |                      | #LABEL2              |
+| ASSIGN               | i                    |                      | #T1                  |
+| +                    | i                    | 1                    | #T2                  |
+| ASSIGN               | #T2                  |                      | i                    |
+| GOTO                 |                      |                      | #LABEL1              |
+| LABEL                |                      |                      | #LABEL3              |
+| *                    | res                  | base                 | #T1                  |
+| ASSIGN               | #T1                  |                      | res                  |
+| GOTO                 |                      |                      | #LABEL2              |
+| LABEL                |                      |                      | #LABEL4              |
+| RETURN               | res                  |                      |                      |
+| FUNCTION_END         |                      |                      | power                |
+| FUNCTION             | bool                 |                      | is_even              |
+| PARAM                | int                  |                      | n                    |
+| %                    | n                    | 2                    | #T1                  |
+| ==                   | #T1                  | 0                    | #T2                  |
+| RETURN               | #T2                  |                      |                      |
+| FUNCTION_END         |                      |                      | is_even              |
+| FUNCTION             | bool                 |                      | toggle               |
+| PARAM                | bool                 | true                 | v                    |
+| NOT                  | v                    |                      | #T1                  |
+| RETURN               | #T1                  |                      |                      |
+| FUNCTION_END         |                      |                      | toggle               |
+| FUNCTION             | int                  |                      | main                 |
+| DECLARE              | int                  | 3                    | i                    |
+| ARG                  | float                |                      | 2.000000             |
+| ARG                  | int                  |                      | 3                    |
+| CALL                 | power                | 2                    |                      |
+| DECLARE              | float                | 0.000000             | f                    |
+| CALL                 | toggle               | 0                    |                      |
+| DECLARE              | bool                 | false                | flag1                |
+| ARG                  | bool                 |                      | false                |
+| CALL                 | toggle               | 1                    |                      |
+| DECLARE              | bool                 | false                | flag2                |
+| DECLARE              | int                  | 5                    | scoped               |
+| DECLARE              | int                  | 10                   | scoped               |
+| +                    | i                    | scoped               | #T1                  |
+| ASSIGN               | #T1                  |                      | i                    |
+| ARG                  | int                  |                      | 1                    |
+| ARG                  | int                  |                      | 2                    |
+| ARG                  | int                  |                      | 3                    |
+| CALL                 | add                  | 3                    |                      |
+| +                    | scoped               | 0                    | #T1                  |
+| ASSIGN               | #T1                  |                      | scoped               |
+| ARG                  | int                  |                      | 1                    |
+| ARG                  | int                  |                      | 2                    |
+| CALL                 | add                  | 2                    |                      |
+| +                    | scoped               | 0                    | #T1                  |
+| ASSIGN               | #T1                  |                      | scoped               |
+| ARG                  | int                  |                      | 1                    |
+| CALL                 | add                  | 1                    |                      |
+| +                    | scoped               | 0                    | #T1                  |
+| ASSIGN               | #T1                  |                      | scoped               |
+| ARG                  | float                |                      | 1.500000             |
+| CALL                 | power                | 1                    |                      |
+| *                    | f                    | 0.000000             | #T1                  |
+| ASSIGN               | #T1                  |                      | f                    |
+| LSHIFT               | i                    | 1                    | #T1                  |
+| ASSIGN               | #T1                  |                      | i                    |
+| RSHIFT               | i                    | 2                    | #T1                  |
+| ASSIGN               | #T1                  |                      | i                    |
+| BIT_OR               | i                    | 3                    | #T1                  |
+| ASSIGN               | #T1                  |                      | i                    |
+| BIT_AND              | i                    | 7                    | #T1                  |
+| ASSIGN               | #T1                  |                      | i                    |
+| BIT_XOR              | i                    | 1                    | #T1                  |
+| ASSIGN               | #T1                  |                      | i                    |
+| RETURN               | i                    |                      |                      |
+| FUNCTION_END         |                      |                      | main                 |
++----------------------+----------------------+----------------------+----------------------+
