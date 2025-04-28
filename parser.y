@@ -23,8 +23,8 @@ std::vector<bool> default_params;
 bool seen_default_param = false;
 
 // loop and switch handling
-bool is_loop = false;
-bool is_switch = false;
+int is_loop = 0;
+int is_switch = 0;
 %}
 
 %union {
@@ -42,7 +42,7 @@ bool is_switch = false;
 %token <type_val> TYPE VOID
 %token <relop> RELOP
 %token IF ELSE WHILE DO FOR RETURN SWITCH CASE DEFAULT BREAK CONTINUE CONST
-%token LAND LOR POW
+%token LAND LOR POW INC DEC
 
 /* Non-terminals producing a Value */
 %type <val> expression opt_expression declaration assignment opt_assignment expression_or_assignment statement if_statement while_statement 
@@ -220,6 +220,82 @@ expression:
     | '(' expression ')' { $$ = $2; }
     | expression RELOP expression { $$ = compare_values($1, $3, $2); $$.name = emit_quad($2, $1.name, $3.name, NULL); }
     | function_call {}
+    | INC VARIABLE {
+        int idx = find_symbol($2);
+        if(idx == -1) {
+            yyerror("Undeclared variable '%s' used in prefix increment", $2);
+            $$ = make_runtime_value(TYPE_INT);
+        } 
+        else if(is_function(idx)) {
+            yyerror("Function '%s' used as variable in increment", $2);
+            $$ = make_runtime_value(symbol_table.table[idx].type);
+        }
+        else if(symbol_table.table[idx].init_value.is_const) {
+            yyerror("Cannot increment constant '%s'", $2);
+            $$ = make_runtime_value(symbol_table.table[idx].type);
+        }
+        else {
+            $$ = make_runtime_value(symbol_table.table[idx].type);
+            $$.name = quad_prefix("INC", $2);
+        }
+      }
+    | DEC VARIABLE {
+          int idx = find_symbol($2);
+          if(idx == -1) {
+              yyerror("Undeclared variable '%s' used in prefix decrement", $2);
+              $$ = make_runtime_value(TYPE_INT);
+          } 
+          else if(is_function(idx)) {
+              yyerror("Function '%s' used as variable in decrement", $2);
+              $$ = make_runtime_value(symbol_table.table[idx].type);
+          }
+          else if(symbol_table.table[idx].init_value.is_const) {
+              yyerror("Cannot decrement constant '%s'", $2);
+              $$ = make_runtime_value(symbol_table.table[idx].type);
+          }
+          else {
+              $$ = make_runtime_value(symbol_table.table[idx].type);
+              $$.name = quad_prefix("DEC", $2);
+          }
+      }
+    | VARIABLE INC {
+          int idx = find_symbol($1);
+          if(idx == -1) {
+              yyerror("Undeclared variable '%s' used in postfix increment", $1);
+              $$ = make_runtime_value(TYPE_INT);
+          } 
+          else if(is_function(idx)) {
+              yyerror("Function '%s' used as variable in increment", $1);
+              $$ = make_runtime_value(symbol_table.table[idx].type);
+          }
+          else if(symbol_table.table[idx].init_value.is_const) {
+              yyerror("Cannot increment constant '%s'", $1);
+              $$ = make_runtime_value(symbol_table.table[idx].type);
+          }
+          else {
+              $$ = make_runtime_value(symbol_table.table[idx].type);
+              $$.name = quad_postfix("INC", $1);
+          }
+      }
+    | VARIABLE DEC {
+          int idx = find_symbol($1);
+          if(idx == -1) {
+              yyerror("Undeclared variable '%s' used in postfix decrement", $1);
+              $$ = make_runtime_value(TYPE_INT);
+          } 
+          else if(is_function(idx)) {
+              yyerror("Function '%s' used as variable in decrement", $1);
+              $$ = make_runtime_value(symbol_table.table[idx].type);
+          }
+          else if(symbol_table.table[idx].init_value.is_const) {
+              yyerror("Cannot decrement constant '%s'", $1);
+              $$ = make_runtime_value(symbol_table.table[idx].type);
+          }
+          else {
+              $$ = make_runtime_value(symbol_table.table[idx].type);
+              $$.name = quad_postfix("DEC", $1);
+          }
+      }
     ;
 
 opt_expression:
@@ -242,17 +318,17 @@ if_body:
     | statement ELSE { enter_scope(); quad_if_else(); } statement { exit_scope(); }
 
 while_statement:
-      WHILE '(' expression ')' { is_loop = true; printf("[Line %d] While loop\n", line_num); enter_scope(); quad_while_start($3.name) } statement { is_loop = false; exit_scope(); quad_while_end(); }
+      WHILE '(' expression ')' { is_loop++; printf("[Line %d] While loop\n", line_num); enter_scope(); quad_while_start($3.name) } statement { is_loop--; exit_scope(); quad_while_end(); }
     ;
 
 do_while_statement:
-      DO { is_loop = true; printf("[Line %d] Do-While loop\n", line_num); enter_scope(); } statement { is_loop = false; exit_scope(); } WHILE '(' expression ')' ';' {}
+      DO { is_loop++; printf("[Line %d] Do-While loop\n", line_num); enter_scope(); } statement { is_loop--; exit_scope(); } WHILE '(' expression ')' ';' {}
     ;
 
 for_statement:
       FOR '(' { enter_scope(); } opt_assignment ';' { 
           printf("[Line %d] For loop\n", line_num);
-          is_loop = true;
+          is_loop++;
           quad_for_start(); 
       } opt_expression { 
           quad_for_condition($7.name);
@@ -263,12 +339,12 @@ for_statement:
        ')' statement 
       { 
           exit_scope();
-          is_loop = false;
+          is_loop--;
           quad_for_end();
       }
     | FOR '(' { enter_scope(); } declaration { 
           printf("[Line %d] For loop\n", line_num);
-          is_loop = true;
+          is_loop++;
           quad_for_start(); 
       } opt_expression { 
           quad_for_condition($6.name);
@@ -279,18 +355,18 @@ for_statement:
        ')' statement 
       { 
           exit_scope();
-          is_loop = false;
+          is_loop--;
           quad_for_end();
       }
     ;
 
 switch_statement:
-      SWITCH '(' expression ')' {  is_switch = true; printf("[Line %d] Switch statement\n", line_num); enter_scope();  quad_switch_start($3.name); } switch_body { exit_scope();  quad_switch_end(); }
+      SWITCH '(' expression ')' {  is_switch++; printf("[Line %d] Switch statement\n", line_num); enter_scope();  quad_switch_start($3.name); } switch_body { exit_scope();  quad_switch_end(); }
     ;
 
 switch_body:
-      '{' case_list '}' { is_switch = false; }
-      | '{' case_list DEFAULT { quad_switch_default(); } ':' statements { quad_switch_case_end(); } '}' { is_switch = false; }
+      '{' case_list '}' { is_switch--; }
+      | '{' case_list DEFAULT { quad_switch_default(); } ':' statements { quad_switch_case_end(); } '}' { is_switch--; }
     ;
 
 case_list:
@@ -442,7 +518,7 @@ void yyerror(const char *format, ...) {
 }
 
 int main(int argc, char **argv) {
-    const char *input_fname = "test.mel";
+    const char *input_fname = "input.mel";
 
     if (argc > 1) {
         input_fname = argv[1];

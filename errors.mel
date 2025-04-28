@@ -1,8 +1,0 @@
-int main(){
-    switch(0){
-        case 0:
-            int i = 3;
-        case 1:
-            int j = 4;
-    }
-}

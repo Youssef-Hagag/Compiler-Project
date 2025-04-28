@@ -65,6 +65,9 @@ int line_num = 1;
 "||"    { return LOR; }
 "**"    { return POW; }
 
+"++"   { return INC; }
+"--"   { return DEC; }
+
 [+\-*/=%!]  { return *yytext; }
 [{}();,:]   { return *yytext; }
 

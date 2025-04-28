@@ -51,6 +51,7 @@
         "functional": "cpp",
         "text_encoding": "cpp",
         "*.mel": "cpp",
-        "format": "cpp"
+        "format": "cpp",
+        "ostream": "cpp"
     }
 }

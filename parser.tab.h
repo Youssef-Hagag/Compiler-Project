@@ -63,7 +63,9 @@
      LAND = 279,
      LOR = 280,
      POW = 281,
-     UMINUS = 282
+     INC = 282,
+     DEC = 283,
+     UMINUS = 284
    };
 #endif
 
@@ -86,7 +88,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 90 "parser.tab.h"
+#line 92 "parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

@@ -1,23 +1,18 @@
 +----------------------+----------------------+----------------------+----------------------+
 | OP                   | ARG1                 | ARG2                 | RESULT               |
 +----------------------+----------------------+----------------------+----------------------+
-| FUNCTION             | int                  |                      | main                 |
-| ASSIGN               | 0                    |                      | #S1                  |
-| ==                   | #S1                  | 0                    | #T2                  |
-| IF_TRUE_GOTO         | #T1                  |                      | #LABEL2              |
-| GOTO                 |                      |                      | #LABEL3              |
-| LABEL                |                      |                      | #LABEL2              |
-| DECLARE              | int                  | 3                    | i                    |
-| GOTO                 |                      |                      | #LABEL4              |
-| LABEL                |                      |                      | #LABEL3              |
-| ==                   | #S1                  | 1                    | #T2                  |
-| IF_TRUE_GOTO         | #T1                  |                      | #LABEL4              |
-| GOTO                 |                      |                      | #LABEL5              |
-| LABEL                |                      |                      | #LABEL4              |
-| DECLARE              | int                  | 4                    | j                    |
-| GOTO                 |                      |                      | #LABEL6              |
-| LABEL                |                      |                      | #LABEL5              |
-| LABEL                |                      |                      | #LABEL6              |
-| LABEL                |                      |                      | #LABEL1              |
-| FUNCTION_END         |                      |                      | main                 |
+| FUNCTION             | int                  |                      | add                  |
+| PARAM                | int                  |                      | a                    |
+| PARAM                | int                  |                      | b                    |
+| +                    | a                    | b                    | #T1                  |
+| RETURN               | #T1                  |                      |                      |
+| FUNCTION_END         |                      |                      | add                  |
+| DECLARE              | int                  | 0                    | x                    |
+| *                    | 1                    | 3                    | #T1                  |
+| %                    | #T1                  | 7                    | #T2                  |
+| +                    | x                    | #T2                  | #T3                  |
+| DECLARE              | int                  | #T3                  | y                    |
+| ARG                  | int                  |                      | 1                    |
+| ARG                  | int                  |                      | 2                    |
+| CALL                 | add                  | 2                    |                      |
 +----------------------+----------------------+----------------------+----------------------+
