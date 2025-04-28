@@ -60,6 +60,7 @@ int global_i = i;
 
 break;
 continue;
+return;
 
 do{
     i(7,10);
@@ -67,3 +68,17 @@ do{
     continue;
 }
 while(i<15);
+
+int ret(){
+    if(i == 5){
+        return 5;
+    }
+    else if(i == 10){
+        return 10;
+    }
+    else{
+        return "0";
+    }
+}
+
+const cst;

@@ -50,6 +50,7 @@
         "xlocnum": "cpp",
         "functional": "cpp",
         "text_encoding": "cpp",
-        "*.mel": "cpp"
+        "*.mel": "cpp",
+        "format": "cpp"
     }
 }

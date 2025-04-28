@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <vector>
+#include "value.h"
 
 void quad_init_file();
 void quad_close_table(void);
@@ -22,9 +24,15 @@ void quad_for_skip();
 void quad_for_end();
 void quad_switch_start(const char *expr);
 void quad_switch_case(const char *value);
+void quad_switch_case_end();
 void quad_switch_default();
 void quad_switch_end();
 void quad_break();
 void quad_continue();
+void quad_function_declare(const char *name, const char *return_type);
+void quad_function_param(const char *param_name, const char *param_type, const char *default_value);
+void quad_function_call(const char *func_name, const std::vector<Value> &args);
+void quad_function_return(const char *value);
+void quad_function_end(const char *name);
 
 #endif // QUADRUPLES_H

@@ -1,5 +1,7 @@
 ---------------------ERRORS---------------------
+[Line 8] Error: Non-void function 'main' does not return a value
 
 ---------------------Unused Symbols---------------------
-Symbol 'm' of type 'bool' declared at line 44 and not used
-Symbol 'str' of type 'string' declared at line 46 and not used
+Symbol 'main' of type 'int' declared at line 1 and not used
+Symbol 'i' of type 'int' declared at line 4 and not used
+Symbol 'j' of type 'int' declared at line 6 and not used

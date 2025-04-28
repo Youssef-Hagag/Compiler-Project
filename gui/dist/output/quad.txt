@@ -1,0 +1,33 @@
++----------------------+----------------------+----------------------+----------------------+
+| OP                   | ARG1                 | ARG2                 | RESULT               |
++----------------------+----------------------+----------------------+----------------------+
+| DECLARE              | int                  | 0                    | i                    |
+| LABEL                |                      |                      | #LABEL1              |
+| GOTO                 |                      |                      | #LABEL3              |
+| LABEL                |                      |                      | #LABEL2              |
+| +                    | i                    | 1                    | #T1                  |
+| ASSIGN               | #T1                  |                      | i                    |
+| GOTO                 |                      |                      | #LABEL1              |
+| LABEL                |                      |                      | #LABEL3              |
+| DECLARE              | int                  | 1                    | x                    |
+| DECLARE              | int                  | 0                    | j                    |
+| LABEL                |                      |                      | #LABEL5              |
+| <                    | j                    | 5                    | #T1                  |
+| IF_FALSE_GOTO        | #T1                  |                      | #LABEL8              |
+| GOTO                 |                      |                      | #LABEL7              |
+| LABEL                |                      |                      | #LABEL6              |
+| +                    | j                    | 1                    | #T1                  |
+| ASSIGN               | #T1                  |                      | j                    |
+| GOTO                 |                      |                      | #LABEL5              |
+| LABEL                |                      |                      | #LABEL7              |
+| -                    | x                    | 2                    | #T1                  |
+| ASSIGN               | #T1                  |                      | x                    |
+| GOTO                 |                      |                      | #LABEL6              |
+| LABEL                |                      |                      | #LABEL8              |
+| GOTO                 |                      |                      | #LABEL2              |
+| LABEL                |                      |                      | #LABEL4              |
+| FUNCTION             | int                  |                      | main                 |
+| +                    | 7                    | 3                    | #T1                  |
+| RETURN               | #T1                  |                      |                      |
+| FUNCTION_END         |                      |                      | main                 |
++----------------------+----------------------+----------------------+----------------------+

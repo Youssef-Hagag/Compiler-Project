@@ -1,56 +1,8 @@
 +----------------------+----------------------+----------------------+----------------------+
 | OP                   | ARG1                 | ARG2                 | RESULT               |
 +----------------------+----------------------+----------------------+----------------------+
-| DECLARE              | string               | unknown              | test                 |
-| ASSIGN               | unknown              |                      | test                 |
-| DECLARE_CONST        | string               | unknown              | x                    |
-| ASSIGN               | unknown              |                      | x                    |
-| DECLARE              | string               | test                 | y                    |
-| ASSIGN               | unknown              |                      | y                    |
-| DECLARE_CONST        | string               | test                 | z                    |
-| ASSIGN               | y                    |                      | z                    |
-| +                    | x                    | unknown              | #T1                  |
-| DECLARE              | string               | #T1                  | m                    |
-| DECLARE              | string               | unknown              | n                    |
-| DECLARE_CONST        | int                  | 5                    | h                    |
-| LABEL                |                      |                      | calc                 |
-| +                    | a                    | b                    | #T1                  |
-| DECLARE_CONST        | int                  | 17                   | i                    |
-| DECLARE              | int                  | 5                    | i                    |
-| LABEL                |                      |                      | #LABEL1              |
-| <                    | i                    | 20                   | #T1                  |
-| IF_FALSE_GOTO        | #T1                  |                      | #LABEL2              |
-| GOTO                 |                      |                      | #LABEL3              |
-| +                    | i                    | 1                    | #T1                  |
-| ASSIGN               | #T1                  |                      | i                    |
-| LABEL                |                      |                      | #LABEL3              |
-| DECLARE              | int                  | 30                   | inner                |
-| ==                   | i                    | 15                   | #T1                  |
-| IF_FALSE_GOTO        | #T1                  |                      | #LABEL4              |
-| GOTO                 |                      |                      | #LABEL2              |
-| GOTO                 |                      |                      | #LABEL5              |
-| LABEL                |                      |                      | #LABEL4              |
-| GOTO                 |                      |                      | #LABEL1              |
-| LABEL                |                      |                      | #LABEL5              |
-| GOTO                 |                      |                      | #LABEL1              |
-| LABEL                |                      |                      | #LABEL2              |
-| DECLARE              | int                  | 10                   | i                    |
-| LABEL                |                      |                      | #LABEL6              |
-| <                    | i                    | 20                   | #T1                  |
-| IF_FALSE_GOTO        | #T1                  |                      | #LABEL7              |
-| GOTO                 |                      |                      | #LABEL8              |
-| +                    | i                    | 1                    | #T1                  |
-| ASSIGN               | #T1                  |                      | i                    |
-| LABEL                |                      |                      | #LABEL8              |
-| ==                   | i                    | 15                   | #T1                  |
-| IF_FALSE_GOTO        | #T1                  |                      | #LABEL9              |
-| GOTO                 |                      |                      | #LABEL7              |
-| GOTO                 |                      |                      | #LABEL10             |
-| LABEL                |                      |                      | #LABEL9              |
-| GOTO                 |                      |                      | #LABEL6              |
-| LABEL                |                      |                      | #LABEL10             |
-| GOTO                 |                      |                      | #LABEL6              |
-| LABEL                |                      |                      | #LABEL7              |
-| DECLARE              | int                  | i                    | global_i             |
-| <                    | i                    | 15                   | #T1                  |
+| FUNCTION             | int                  |                      | func                 |
+| PARAM                | string               |                      | x                    |
+| FUNCTION_END         |                      |                      | func                 |
+| FUNCTION_END         |                      |                      | func                 |
 +----------------------+----------------------+----------------------+----------------------+

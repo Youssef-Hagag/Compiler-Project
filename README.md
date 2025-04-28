@@ -1,0 +1,1 @@
+pyinstaller --onefile --noconsole --add-binary "../mellow.exe;." mellow.py

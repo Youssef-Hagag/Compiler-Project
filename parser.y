@@ -5,11 +5,9 @@
 #include "symbol.h"
 #include "error.h"
 #include "value.h"
+#include "quadruples.h"
 #include <vector>
 #include <stdarg.h>
-
-#include "quadruples.h"
-#include "quadruples.cpp"
 
 extern int yylex(void);
 void yyerror(const char *s, ...);
@@ -102,6 +100,7 @@ statement:
       }
     | BREAK ';' { if(!is_loop && !is_switch) yyerror("Break statement not in loop or switch"); quad_break(); }
     | CONTINUE ';' { if(!is_loop) yyerror("Continue statement not in loop"); quad_continue(); }
+    | error ';' { yyerrok; } // Error recovery: skip to the next semicolon
     ;
 
 declarations:
@@ -291,20 +290,19 @@ switch_statement:
 
 switch_body:
       '{' case_list '}' { is_switch = false; }
-      | '{' case_list DEFAULT { quad_switch_default(); } ':' statements '}' { is_switch = false; }
+      | '{' case_list DEFAULT { quad_switch_default(); } ':' statements { quad_switch_case_end(); } '}' { is_switch = false; }
     ;
 
 case_list:
       /* empty */ {}
-    | case_list CASE INTEGER { quad_switch_case($3.name); } ':' statements
+    | case_list CASE INTEGER { quad_switch_case($3.name); } ':' statements { quad_switch_case_end(); }
     ;
 
 //--------------------------------------------------------------------------[Functions]--------------------------------------------------------------------------//
 function:
       TYPE VARIABLE '(' { 
         int idx = add_symbol($2, $1, true);
-        if (idx == -1) {
-        } else {
+        if (idx != -1) {
             printf("[Line %d] Function definition: %s\n", line_num, $2); 
             current_function_name = strdup($2);
             current_return_type = $1;
@@ -330,8 +328,7 @@ function:
       }
     | VOID VARIABLE '(' { 
         int idx = add_symbol($2, $1, true);
-        if (idx == -1) {
-        } else {
+        if (idx != -1) {
             printf("[Line %d] Function definition: %s\n", line_num, $2); 
             current_function_name = strdup($2);
             current_return_type = $1;
@@ -351,6 +348,7 @@ function:
           } 
           exit_scope(); 
       }
+    | error '}' { yyerrok; exit_scope(); printf("skipping function body on line %d\n", line_num); } // Error recovery: skip to the next closing brace
     ;
 
 parameters:

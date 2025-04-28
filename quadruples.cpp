@@ -4,15 +4,14 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
-#include <vector>
 #include <math.h>
-#include "value.h"
 #define OP_W 20
 #define ARG_W 20
 
+// counter for temporary variables, labels, and switch variables
 static int temp_counter = 0;
 static int label_counter = 0;
-static int switch_counter = 0; // Counter for switch variables
+static int switch_counter = 0;
 
 static std::vector<char *> continue_labels;
 static std::vector<char *> break_labels;
@@ -21,11 +20,21 @@ static std::vector<char *> if_false_labels;
 static std::vector<char *> if_end_labels;
 
 struct SwitchContext {
-    char *switch_expr;        // Switch expression
-    char *next_case_label;    // Next case comparison label
+    char *switch_expr;
+    char *next_case_comparison; 
+    char *next_case_body;
 };
 // for nested switch statements
 static std::vector<SwitchContext> switch_contexts;
+
+struct ForContext {
+    char *start_label; 
+    char *skip_label;
+    char *increment_label;
+    char *end_label;    
+};
+
+static std::vector<ForContext> for_contexts;
 
 // array of operators that reset the temp_counter
 static const char *reset_ops[] = {
@@ -172,23 +181,20 @@ void quad_if_end()
 
 void quad_while_start(const char *condition)
 {
-    // 1) new begin/end labels
     char *Lbegin = new_label(), *Lend = new_label();
+
     continue_labels.push_back(Lbegin);
     break_labels.push_back(Lend);
-    // 2) mark the loop head
+
     emit_quad("LABEL", NULL, NULL, Lbegin);
-    // 3) if false, break out
     emit_quad("IF_FALSE_GOTO", condition, NULL, Lend);
 }
 
 void quad_while_end()
 {
-    // 4) at end of body, jump back to head
     emit_quad("GOTO", NULL, NULL, continue_labels.back());
-    // 5) place loop‐end label
     emit_quad("LABEL", NULL, NULL, break_labels.back());
-    // 6) unwind stacks
+
     continue_labels.pop_back();
     break_labels.pop_back();
 }
@@ -199,59 +205,73 @@ void quad_do_while_start()
     continue_labels.push_back(Lbody);
     break_labels.push_back(Lend);
 
-    // label start of body
     emit_quad("LABEL", NULL, NULL, Lbody);
 }
 
 void quad_do_while_end(const char *condition)
 {
-    // after body, evaluate condition → if true, repeat
+    // after body, evaluate condition -> if true, repeat
     emit_quad("IF_TRUE_GOTO", condition, NULL, continue_labels.back());
-    // place end label
     emit_quad("LABEL", NULL, NULL, break_labels.back());
+
     continue_labels.pop_back();
     break_labels.pop_back();
 }
 
 void quad_for_start()
 {
-    // Create new labels for loop start, loop iteration, and loop end
-    char *Literation = new_label();
+    char *Lstart = new_label();
+    char *Lincrement = new_label(); 
+    char *Lskip = new_label(); // Skip the first assignment (i = i + 1)
     char *Lend = new_label();
+    ForContext context = {Lstart, Lskip, Lincrement, Lend};
+    for_contexts.push_back(context);
 
-    // Store these labels for later use
-    continue_labels.push_back(Literation);
+    continue_labels.push_back(Lstart);
     break_labels.push_back(Lend);
 
-    emit_quad("LABEL", NULL, NULL, Literation);
+    emit_quad("LABEL", NULL, NULL, Lstart);
 }
 
 void quad_for_condition(const char *condition)
 {
+    if (for_contexts.empty()) {
+        return;
+    }
+    ForContext &context = for_contexts.back();
+
     // If condition is false, break out of loop
     if (condition != NULL)
         emit_quad("IF_FALSE_GOTO", condition, NULL, break_labels.back());
 
-    char *LSkip = new_label(); // Skip the first assignment (i = i + 1)
-    continue_labels.push_back(LSkip);
-    emit_quad("GOTO", NULL, NULL, LSkip);
+    emit_quad("GOTO", NULL, NULL, context.skip_label);
+    emit_quad("LABEL", NULL, NULL, context.increment_label);
 }
 
 void quad_for_skip()
 {
-    emit_quad("LABEL", NULL, NULL, continue_labels.back());
-    continue_labels.pop_back();
+    if (for_contexts.empty()) {
+        return;
+    }
+    ForContext &context = for_contexts.back();
+    emit_quad("GOTO", NULL, NULL, context.start_label);
+    emit_quad("LABEL", NULL, NULL, context.skip_label);
 }
 
 void quad_for_end()
 {
-    // Place the end label where 'break' will jump to
-    emit_quad("GOTO", NULL, NULL, continue_labels.back());
-    emit_quad("LABEL", NULL, NULL, break_labels.back());
+    if (for_contexts.empty()) {
+        return;
+    }
+    ForContext &context = for_contexts.back();
+
+    emit_quad("GOTO", NULL, NULL, context.increment_label);
+    emit_quad("LABEL", NULL, NULL, context.end_label);
 
     // Clean up the loop labels
-    continue_labels.pop_back();
+    continue_labels.pop_back(); 
     break_labels.pop_back();
+    for_contexts.pop_back();
 }
 
 void quad_switch_start(const char *expr) {
@@ -264,7 +284,8 @@ void quad_switch_start(const char *expr) {
     const char *switch_var = new_switch_var();
     emit_quad("ASSIGN", expr, NULL, switch_var);
     context.switch_expr = strdup(switch_var);
-    context.next_case_label = NULL; // since there is no previous case that would need a label to jump to
+    context.next_case_comparison = NULL; // since there is no previous case that would need a label to jump to
+    context.next_case_body = NULL; // no case body yet
     switch_contexts.push_back(context);
 }
 
@@ -278,16 +299,17 @@ void quad_switch_case(const char *value) {
     SwitchContext &context = switch_contexts.back();
     
     // Place label for previous case's comparison to jump to
-    char *comparison_label = context.next_case_label;
+    char *comparison_label = context.next_case_comparison;
     if(comparison_label != NULL) {
         emit_quad("LABEL", NULL, NULL, comparison_label);
     }
     
     // Create label for case body
-    char *Lcase_body = new_label();
+    char *Lcase_body = context.next_case_body ? context.next_case_body : new_label();
     
-    // Create label for next case comparison
-    context.next_case_label = new_label();
+    // Create label for next case comparison and body
+    context.next_case_comparison = new_label();
+    context.next_case_body = new_label();
     
     // Compare switch expression with case value
     char *temp = new_temp();
@@ -297,10 +319,26 @@ void quad_switch_case(const char *value) {
     emit_quad("IF_TRUE_GOTO", temp, NULL, Lcase_body);
     
     // Otherwise, continue to next comparison
-    emit_quad("GOTO", NULL, NULL, context.next_case_label);
+    emit_quad("GOTO", NULL, NULL, context.next_case_comparison);
     
     // Place case body label
     emit_quad("LABEL", NULL, NULL, Lcase_body);
+}
+
+void quad_switch_case_end() {
+    // Make sure we have an active switch
+    if (switch_contexts.empty()) {
+        // Error: case end outside of switch
+        return;
+    }
+    
+    SwitchContext &context = switch_contexts.back();
+    
+    // If we enter a single case, we need to skip the next case comparison
+    // and jump to the next case body
+    if (context.next_case_body != NULL) {
+        emit_quad("GOTO", NULL, NULL, context.next_case_body);
+    }
 }
 
 void quad_switch_default() {
@@ -313,12 +351,14 @@ void quad_switch_default() {
     SwitchContext &context = switch_contexts.back();
     
     // Place label for the last case's comparison to jump to
-    char *comparison_label = context.next_case_label;
-    emit_quad("LABEL", NULL, NULL, comparison_label);
+    emit_quad("LABEL", NULL, NULL, context.next_case_comparison);
+    // no comparison needed for default, just a label
+    emit_quad("LABEL", NULL, NULL, context.next_case_body);
     
     // Default doesn't need a comparison, just a label
-    // The next_case_label becomes NULL since there are no more cases after default
-    context.next_case_label = NULL;
+    // The next_case_comparison and next_case_body becomes NULL since there are no more cases after default
+    context.next_case_comparison = NULL;
+    context.next_case_body = NULL;
 }
 
 void quad_switch_end() {
@@ -330,9 +370,12 @@ void quad_switch_end() {
     
     SwitchContext &context = switch_contexts.back();
     
-    // If there was no default case (and we still have a next_case_label)
-    if (context.next_case_label != NULL) {
-        emit_quad("LABEL", NULL, NULL, context.next_case_label);
+    // If there was no default case (and we still have a next_case_comparison)
+    if (context.next_case_comparison != NULL) {
+        emit_quad("LABEL", NULL, NULL, context.next_case_comparison);
+    }
+    if(context.next_case_body != NULL) {
+        emit_quad("LABEL", NULL, NULL, context.next_case_body);
     }
     
     // Place end label for break statements
